@@ -29,7 +29,7 @@ jobs:
   build-binaries:
     name: Build & upload (Windows)
     needs: release-please
-    if: needs.release-please.outputs.releases_created == 'true'
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     runs-on: windows-latest
 
     steps:
