@@ -6,8 +6,22 @@ import extractZip from "extract-zip";
 import * as tar from "tar";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const APP_ROOT = dirname(__dirname);
-const BIN_DIR = join(APP_ROOT, "..", "..", "bin");
+
+function findProjectRoot(startPath: string): string {
+  let current = startPath;
+  while (current !== dirname(current)) {
+    if (existsSync(join(current, "package.json"))) {
+      return current;
+    }
+    current = dirname(current);
+  }
+  return startPath;
+}
+
+const PROJECT_ROOT = findProjectRoot(__dirname);
+const isDesktopApp = existsSync(join(PROJECT_ROOT, "apps", "desktop", "package.json"));
+const APP_ROOT = isDesktopApp ? join(PROJECT_ROOT, "apps", "desktop") : PROJECT_ROOT;
+const BIN_DIR = join(APP_ROOT, "bin");
 const TMP_DIR = join(APP_ROOT, ".tmp-engine");
 
 const CONFIG = {
