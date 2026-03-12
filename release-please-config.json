@@ -1,0 +1,8 @@
+{
+  "packages": {
+    "apps/desktop": {
+      "release-type": "node",
+      "package-name": "oasis"
+    }
+  }
+}
