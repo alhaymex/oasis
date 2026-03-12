@@ -26,25 +26,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Create release PR
-        id: release
-        uses: google-github-actions/release-please-action@v4
-        with:
-          config-file: release-please-config.json
-          default-branch: main
-          release-type: node
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure Git
-        if: steps.release.outputs.releases_created == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Push tags
-        if: steps.release.outputs.releases_created == 'true'
-        run: git push --follow-tags
-
   build-binaries:
     name: Build & upload (Windows)
     needs: release-please

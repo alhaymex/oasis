@@ -12,13 +12,16 @@
     "build:canary": "vite build && electrobun build --env=canary",
     "build:stable": "vite build && electrobun build --env=stable",
     "format": "prettier --write .",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "lint": "bunx eslint .",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "bun run src/bun/utils/engine-manager"
   },
   "dependencies": {
     "electrobun": "1.15.1",
+    "extract-zip": "^2.0.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tar": "^7.5.11"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
