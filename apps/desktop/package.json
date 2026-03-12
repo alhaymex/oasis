@@ -12,7 +12,7 @@
     "build:canary": "vite build && electrobun build --env=canary",
     "build:stable": "vite build && electrobun build --env=stable",
     "format": "prettier --write .",
-    "lint": "eslint .",
+    "lint": "bunx eslint .",
     "typecheck": "tsc --noEmit",
     "postinstall": "bun run src/bun/utils/engine-manager"
   },
