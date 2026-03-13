@@ -1,10 +1,11 @@
 import type { ElectrobunConfig } from "electrobun";
+import pkgJSON from "./package.json";
 
 export default {
 	app: {
 		name: "Oasis",
 		identifier: "oasis.syferpool.com",
-		version: "0.0.1",
+		version: pkgJSON.version,
 	},
 	build: {
 		copy: {

@@ -1,22 +1,20 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
-import Download from "./screens/Download";
+import Downloads from "./screens/Downloads";
 import Library from "./screens/Library";
 import Settings from "./screens/Settings";
-import { api } from "./lib/rpcClient";
+import Browse from "./screens/Browse";
 
 const App = () => {
-  const handleClick = () => {
-    api.ping("PING from Client!");
-  }
   return (
     <HashRouter>
       <div className="flex">
         <Sidebar />
         <Routes>
           <Route path="/library" element={<Library />} />
-          <Route path="/download" element={<Download />} />
+          <Route path="/browse" element={<Browse />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/downloads" element={<Downloads />} />
         </Routes>
       </div>
     </HashRouter>
