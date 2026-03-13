@@ -1,18 +1,18 @@
 import {
   BookMarked,
   BookOpen,
-  Home,
+  Library,
   NotepadText,
   Palette,
   Settings,
-  type LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const topItems = [
   {
     title: "Library",
-    icon: Home,
+    icon: Library,
     tooltip: "Your Library",
     url: "/library",
   },
