@@ -11,7 +11,8 @@ export default {
 			"dist/index.html": "views/mainview/index.html",
 			"dist/assets": "views/mainview/assets",
 		},
-		// @ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-expect-error
 		watchIgnore: ["dist/**"],
 		mac: {
 			bundleCEF: false,
