@@ -1,28 +1,8 @@
-import { fileURLToPath } from "url";
-import { existsSync, mkdirSync } from "fs";
 import { chmod, rm } from "fs/promises";
-import { dirname, join } from "path";
+import { join } from "path";
 import extractZip from "extract-zip";
 import * as tar from "tar";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-function findProjectRoot(startPath: string): string {
-  let current = startPath;
-  while (current !== dirname(current)) {
-    if (existsSync(join(current, "package.json"))) {
-      return current;
-    }
-    current = dirname(current);
-  }
-  return startPath;
-}
-
-const PROJECT_ROOT = findProjectRoot(__dirname);
-const isDesktopApp = existsSync(join(PROJECT_ROOT, "apps", "desktop", "package.json"));
-const APP_ROOT = isDesktopApp ? join(PROJECT_ROOT, "apps", "desktop") : PROJECT_ROOT;
-const BIN_DIR = join(APP_ROOT, "bin");
-const TMP_DIR = join(APP_ROOT, ".tmp-engine");
+import { BIN_DIR, TMP_DIR, getBinPath, pathExists, ensureDir } from "./paths";
 
 const CONFIG = {
   win32: {
@@ -49,7 +29,7 @@ const currOS = process.platform as "win32" | "darwin" | "linux";
 const target = CONFIG[currOS];
 
 export async function isEngineInstalled(): Promise<boolean> {
-  return existsSync(join(BIN_DIR, target.finalName));
+  return pathExists(getBinPath(target.finalName));
 }
 
 export async function installEngine(onStatusUpdate?: (msg: string) => void) {
@@ -58,11 +38,11 @@ export async function installEngine(onStatusUpdate?: (msg: string) => void) {
     return;
   }
 
-  if (!existsSync(BIN_DIR)) mkdirSync(BIN_DIR);
-  if (!existsSync(TMP_DIR)) mkdirSync(TMP_DIR);
+  ensureDir(BIN_DIR);
+  ensureDir(TMP_DIR);
 
   const archivePath = join(TMP_DIR, `engine.${target.type}`);
-  const finalDest = join(BIN_DIR, target.finalName);
+  const finalDest = getBinPath(target.finalName);
 
   onStatusUpdate?.(`Downloading engine for ${currOS}...`);
   const response = await fetch(target.url);

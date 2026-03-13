@@ -29,7 +29,7 @@ export const ThemeConfigSchema = z.object({
 
 export const AppConfigSchema = z.object({
   version: z.number().default(1),
-  libraryPath: z.string().default(join(os.homedir(), "OasisLibrary")),
+  libraryPath: z.string().default(join(os.homedir(), "oasis-library")),
   language: z.string().default("en"),
   autoUpdate: z.boolean().default(true),
   launchAtStartup: z.boolean().default(false),
