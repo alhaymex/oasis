@@ -1,22 +1,41 @@
-import { join } from "path";
 import os from "os";
+import { join } from "path";
+import { mkdir } from "fs/promises";
 import { AppConfig, AppConfigSchema, Theme } from "../../schema/config";
 import { DEFAULT_CONFIG } from "./defaults";
 
-const CONFIG_DIR = join(os.homedir(), ".config", "oasis");
+const CONFIG_DIR = getConfigDir();
 const CONFIG_PATH = join(CONFIG_DIR, "config.json");
+
+function getConfigDir(): string {
+  const home = os.homedir();
+
+  switch (process.platform) {
+    case "win32":
+      return join(process.env.APPDATA || join(home, "AppData", "Roaming"), "oasis");
+
+    case "darwin":
+      return join(home, "Library", "Application Support", "oasis");
+
+    default:
+      return join(process.env.XDG_CONFIG_HOME || join(home, ".config"), "oasis");
+  }
+}
 
 export class ConfigManager {
   private config: AppConfig = DEFAULT_CONFIG;
 
-  async init(): Promise<void> {}
+  async init(): Promise<void> {
+    await this.ensureConfigDir();
+    await this.load();
+  }
 
   // Helpers
   private async ensureConfigDir(): Promise<void> {
-    await Bun.spawn(["mkdir", "-p", CONFIG_DIR]).exited;
+    await mkdir(CONFIG_DIR, { recursive: true });
   }
 
-  private async Load(): Promise<void> {
+  private async load(): Promise<void> {
     const file = Bun.file(CONFIG_PATH);
     const exists = await file.exists();
 
@@ -26,7 +45,17 @@ export class ConfigManager {
       return;
     }
 
-    const raw = await file.json();
+    let raw: unknown;
+
+    try {
+      raw = await file.json();
+    } catch {
+      console.warn("[ConfigManager] Corrupted JSON detected, resseting config.")
+      this.config = DEFAULT_CONFIG;
+      await this.save();
+      return;
+    }
+
     const parsed = AppConfigSchema.safeParse(raw);
 
     if (parsed.success) {
@@ -41,7 +70,10 @@ export class ConfigManager {
   }
 
   private async save(): Promise<void> {
-    await Bun.write(CONFIG_PATH, JSON.stringify(this.config, null, 2));
+    const tmp = CONFIG_PATH + ".tmp";
+
+    await Bun.write(tmp, JSON.stringify(this.config, null, 2));
+    await Bun.spawn(["mv", tmp, CONFIG_PATH]).exited;
   }
 
   // Public API

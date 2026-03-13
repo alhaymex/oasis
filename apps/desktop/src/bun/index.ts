@@ -4,6 +4,7 @@ import { existsSync, readdirSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
 import { rpc } from "./rpc";
+import { ConfigManager } from "./utils/config-manager";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,6 +32,8 @@ const KIWIX_URL = `http://127.0.0.1:${KIWIX_PORT}`;
 const isWindows = process.platform === "win32";
 const kiwixBinary = isWindows ? "kiwix-serve-win.exe" : `kiwix-serve-${process.platform}`;
 const kiwixPath = join(APP_ROOT, "bin", kiwixBinary);
+
+const configManager = new ConfigManager();
 
 function getZimDirectory(): string {
   return join(APP_ROOT, "library");
@@ -93,6 +96,8 @@ function startKiwixServer(zimFiles: string[]) {
 }
 
 async function start() {
+  await configManager.init();
+  
   const url = await getMainViewUrl();
 
   const hasEngine = await isEngineInstalled();
