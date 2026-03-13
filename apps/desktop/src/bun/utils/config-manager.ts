@@ -1,6 +1,6 @@
 import os from "os";
 import { join } from "path";
-import { mkdir } from "fs/promises";
+import { mkdir, rename } from "fs/promises";
 import { AppConfig, AppConfigSchema, Theme } from "../../schema/config";
 import { DEFAULT_CONFIG } from "./defaults";
 
@@ -73,7 +73,7 @@ export class ConfigManager {
     const tmp = CONFIG_PATH + ".tmp";
 
     await Bun.write(tmp, JSON.stringify(this.config, null, 2));
-    await Bun.spawn(["mv", tmp, CONFIG_PATH]).exited;
+    await rename(tmp, CONFIG_PATH);
   }
 
   // Public API
