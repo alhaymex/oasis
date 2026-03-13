@@ -1,14 +1,11 @@
 import { BrowserWindow, Updater } from "electrobun/bun";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
-import { rpc } from "./rpc";
-import { ConfigManager } from "./utils/config-manager";
+import { rpc, configManager, zimManager, zimDownloader } from "./rpc";
 import { KiwixServer } from "./utils/kiwix-server";
-import { ZimManager } from "./utils/zim-manager";
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
 
-const configManager = new ConfigManager();
 const kiwixServer = new KiwixServer();
 
 async function getMainViewUrl(): Promise<string> {
@@ -49,8 +46,7 @@ async function start() {
     splashWin.close();
   }
 
-  const config = configManager.getConfig();
-  const zimManager = new ZimManager(config.libraryPath);
+
 
   // Sync existing ZIM files into library.xml
   zimManager.initLibraryXml();
@@ -75,6 +71,10 @@ async function start() {
       x: 200,
       y: 200,
     },
+  });
+
+  zimDownloader.setProgressCallback((progress) => {
+    rpc.send("onDownloadProgress", progress);
   });
 }
 
