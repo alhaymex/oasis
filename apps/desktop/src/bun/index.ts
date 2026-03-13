@@ -3,6 +3,7 @@ import { join, dirname } from "path";
 import { existsSync, readdirSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
+import { rpc } from "./rpc";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -128,6 +129,7 @@ async function start() {
   const mainWindow = new BrowserWindow({
     title: "Oasis",
     url,
+    rpc,
     frame: {
       width: 900,
       height: 700,
