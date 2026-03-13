@@ -1,31 +1,15 @@
 import { BrowserWindow, Updater } from "electrobun/bun";
-import { readdirSync } from "fs";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
 import { rpc } from "./rpc";
 import { ConfigManager } from "./utils/config-manager";
-import { getLibraryPath, getBinPath, ensureDir, pathExists, join } from "./utils/paths";
+import { KiwixServer } from "./utils/kiwix-server";
+import { ZimManager } from "./utils/zim-manager";
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
-const KIWIX_PORT = 9999;
-const KIWIX_URL = `http://127.0.0.1:${KIWIX_PORT}`;
-
-const isWindows = process.platform === "win32";
-const kiwixBinary = isWindows ? "kiwix-serve-win.exe" : `kiwix-serve-${process.platform}`;
-const kiwixPath = getBinPath(kiwixBinary);
 
 const configManager = new ConfigManager();
-
-function getZimFiles(): string[] {
-  const zimDir = getLibraryPath();
-  if (!pathExists(zimDir)) {
-    ensureDir(zimDir);
-    return [];
-  }
-  return readdirSync(zimDir).filter((f) => f.endsWith(".zim"));
-}
-
-let kiwixProcess: ReturnType<typeof Bun.spawn> | undefined;
+const kiwixServer = new KiwixServer();
 
 async function getMainViewUrl(): Promise<string> {
   const channel = await Updater.localInfo.channel();
@@ -39,37 +23,6 @@ async function getMainViewUrl(): Promise<string> {
     }
   }
   return "views://mainview/index.html";
-}
-
-async function waitForServer(url: string, retries = 20): Promise<boolean> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      await fetch(url, { method: "HEAD" });
-      return true;
-    } catch {
-      await Bun.sleep(100);
-    }
-  }
-  return false;
-}
-
-function startKiwixServer(zimFiles: string[]) {
-  if (zimFiles.length === 0) {
-    console.log("No ZIM files found. Skipping kiwix-serve.");
-    return;
-  }
-
-  console.log(`Starting kiwix server on port ${KIWIX_PORT} with ${zimFiles.length} ZIM file(s)...`);
-
-  const zimPaths = zimFiles.map((f) => join(getLibraryPath(), f));
-
-  kiwixProcess = Bun.spawn([kiwixPath, "--port", KIWIX_PORT.toString(), ...zimPaths], {
-    stdout: "inherit",
-    stderr: "inherit",
-    onExit(_proc, exitCode) {
-      console.log(`kiwix-serve exited with code ${exitCode}`);
-    },
-  });
 }
 
 async function start() {
@@ -96,16 +49,20 @@ async function start() {
     splashWin.close();
   }
 
-  const zimFiles = getZimFiles();
-  startKiwixServer(zimFiles);
+  const config = configManager.getConfig();
+  const zimManager = new ZimManager(config.libraryPath);
 
-  if (zimFiles.length > 0) {
-    const isOnline = await waitForServer(KIWIX_URL);
-    if (!isOnline) {
-      console.error("🚨 Failed to connect to kiwix-serve.");
-      if (kiwixProcess) kiwixProcess.kill();
-      process.exit(1);
-    }
+  // Sync existing ZIM files into library.xml
+  zimManager.initLibraryXml();
+
+  // Always start kiwix-serve in library mode — it monitors for changes
+  kiwixServer.start(zimManager.getLibraryXmlPath());
+
+  const isOnline = await kiwixServer.waitForReady();
+  if (!isOnline) {
+    console.error("🚨 Failed to connect to kiwix-serve.");
+    kiwixServer.stop();
+    process.exit(1);
   }
 
   const mainWindow = new BrowserWindow({
@@ -122,3 +79,4 @@ async function start() {
 }
 
 start().catch(console.error);
+

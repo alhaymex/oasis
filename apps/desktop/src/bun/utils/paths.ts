@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import os from "os";
 
 export { join } from "path";
 
@@ -23,14 +24,14 @@ export const isDesktopApp = existsSync(join(PROJECT_ROOT, "apps", "desktop", "pa
 export const APP_ROOT = isDesktopApp ? join(PROJECT_ROOT, "apps", "desktop") : PROJECT_ROOT;
 export const BIN_DIR = join(APP_ROOT, "bin");
 export const TMP_DIR = join(APP_ROOT, ".tmp-engine");
-export const LIBRARY_DIR = join(APP_ROOT, "library");
+export const DEFAULT_LIBRARY_DIR = join(os.homedir(), "oasis-library");
 
 export function getBinPath(binaryName: string): string {
   return join(BIN_DIR, binaryName);
 }
 
-export function getLibraryPath(): string {
-  return LIBRARY_DIR;
+export function getLibraryPath(override?: string): string {
+  return override ?? DEFAULT_LIBRARY_DIR;
 }
 
 export function ensureDir(path: string): void {
