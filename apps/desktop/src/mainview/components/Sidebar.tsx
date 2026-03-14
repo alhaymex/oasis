@@ -1,18 +1,19 @@
 import {
   BookMarked,
   BookOpen,
-  Library,
+  Download,
+  Home,
   NotepadText,
   Palette,
   Settings,
-  type LucideIcon,
+  type LucideIcon
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const topItems = [
   {
     title: "Library",
-    icon: Library,
+    icon: Home,
     tooltip: "Your Library",
     url: "/library",
   },
@@ -37,6 +38,12 @@ const topItems = [
 ];
 
 const bottomItems = [
+  {
+    title: "Downloads",
+    icon: Download,
+    tooltip: "Downloads",
+    url: "/downloads",
+  },
   {
     title: "Theme",
     icon: Palette,

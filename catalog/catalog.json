@@ -1,0 +1,56 @@
+{
+  "sites": [
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "description": "The Free Encyclopedia. A collaboratively edited, multilingual, free-access, free-content Internet encyclopedia.",
+      "icon": "globe",
+      "variants": [
+        {
+          "id": "wikipedia_en_all",
+          "name": "English - All",
+          "sizeStr": "100.2 GB",
+          "filename": "wikipedia_en_all_maxi_2023-11.zim",
+          "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_all_maxi_2023-11.zim"
+        },
+        {
+          "id": "wikipedia_en_top100",
+          "name": "English - Top 100",
+          "sizeStr": "1.5 GB",
+          "filename": "wikipedia_en_top_mini_2023-10.zim",
+          "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_top_mini_2023-10.zim"
+        }
+      ]
+    },
+    {
+      "id": "gutenberg",
+      "name": "Project Gutenberg",
+      "description": "A library of over 60,000 free eBooks. Choose among free epub and Kindle eBooks, download them or read them online.",
+      "icon": "book",
+      "variants": [
+        {
+          "id": "gutenberg_en_all",
+          "name": "English - Full Collection",
+          "sizeStr": "65.4 GB",
+          "filename": "gutenberg_en_all_2023-09.zim",
+          "url": "https://download.kiwix.org/zim/gutenberg/gutenberg_en_all_2023-09.zim"
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "name": "Test File (Ray Charles)",
+      "description": "A very small Wikipedia excerpt for testing downloads quickly.",
+      "icon": "vial",
+      "variants": [
+        {
+          "id": "ray_charles_test",
+          "name": "Ray Charles",
+          "sizeStr": "3.2 MB",
+          "filename": "wikipedia_en_ray_charles.zim",
+          "url": "https://download.kiwix.org/zim/wikipedia/wikipedia_en_ray_charles.zim"
+        }
+      ]
+    }
+  ]
+}
