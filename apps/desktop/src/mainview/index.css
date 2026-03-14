@@ -27,3 +27,28 @@
     @apply bg-[var(--color-bg)] text-[var(--color-accent)];
   }
 }
+
+/* Custom scrollbar — works on Chromium & WebKit webviews (Windows/macOS/Linux) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* Firefox fallback */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-bg);
+}

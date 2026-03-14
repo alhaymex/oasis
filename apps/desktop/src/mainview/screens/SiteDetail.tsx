@@ -1,25 +1,17 @@
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useSiteDetail } from "../hooks/useCatalog";
 import { api } from "../lib/rpcClient";
-import type { StoreCatalog, StoreSite } from "@/shared/types";
 import { ArrowLeft, Download } from "lucide-react";
 
 export default function SiteDetail() {
   const { siteId } = useParams<{ siteId: string }>();
-  const [site, setSite] = useState<StoreSite | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { site, isLoading } = useSiteDetail(siteId);
 
-  useEffect(() => {
-    async function load() {
-      const data = await api.getStoreCatalog();
-      const found = data?.sites.find((s) => s.id === siteId) ?? null;
-      setSite(found);
-      setLoading(false);
-    }
-    load();
-  }, [siteId]);
+  const handleDownload = (variantId: string, url: string, filename: string) => {
+    api.startDownload(variantId, url, filename);
+  };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex-1 p-8">
         <p className="text-sm text-[var(--color-muted)] animate-pulse">Loading...</p>
@@ -37,10 +29,6 @@ export default function SiteDetail() {
       </div>
     );
   }
-
-  const handleDownload = (variantId: string, url: string, filename: string) => {
-    api.startDownload(variantId, url, filename);
-  };
 
   return (
     <div className="flex-1 overflow-y-auto p-8 max-w-3xl mx-auto">

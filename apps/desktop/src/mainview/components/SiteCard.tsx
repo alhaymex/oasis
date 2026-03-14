@@ -18,7 +18,7 @@ export default function SiteCard({ site }: SiteCardProps) {
   return (
     <Link
       to={`/browse/${site.id}`}
-      className="group relative flex flex-col w-48 cursor-pointer transition-transform duration-300 hover:-translate-y-1 focus:outline-none"
+      className="group relative flex flex-col w-full max-w-[12rem] cursor-pointer transition-transform duration-300 hover:-translate-y-1 focus:outline-none"
     >
       {/* Book spine + cover */}
       <div className="relative w-full aspect-[3/4] rounded-md overflow-hidden shadow-lg ring-1 ring-[var(--color-border)] group-hover:ring-[var(--color-primary)] transition-all duration-300">
