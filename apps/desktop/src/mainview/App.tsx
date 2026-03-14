@@ -4,6 +4,7 @@ import Downloads from "./screens/Downloads";
 import Library from "./screens/Library";
 import Settings from "./screens/Settings";
 import Browse from "./screens/Browse";
+import SiteDetail from "./screens/SiteDetail";
 
 function NotFound() {
   return <h1>404 - Page not found</h1>
@@ -17,6 +18,7 @@ const App = () => {
         <Routes>
           <Route path="/library" element={<Library />} />
           <Route path="/browse" element={<Browse />} />
+          <Route path="/browse/:siteId" element={<SiteDetail />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/downloads" element={<Downloads />} />
           <Route path="*" element={<NotFound />} />

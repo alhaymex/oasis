@@ -10,7 +10,7 @@ export type AppRPCSchema = {
         response: void;
       };
       getStoreCatalog: {
-        params: { url: string };
+        params: void;
         response: StoreCatalog | null;
       };
       startDownload: {

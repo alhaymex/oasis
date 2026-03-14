@@ -3,6 +3,7 @@ import { AppRPCSchema } from "../shared/rpc";
 import { ConfigManager } from "./utils/config-manager";
 import { ZimManager } from "./utils/zim-manager";
 import { ZimDownloader } from "./utils/download-manager";
+import { fetchMergedCatalog } from "./utils/catalog-fetcher";
 
 const configManager = new ConfigManager();
 configManager.init().catch(console.error);
@@ -16,11 +17,12 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
   handlers: {
     requests: {
       ping: ({ msg }) => console.log(msg),
-      getStoreCatalog: async ({ url }) => {
+      getStoreCatalog: async () => {
         try {
-          const res = await fetch(url);
-          if (!res.ok) return null;
-          return await res.json();
+          const catalog = await fetchMergedCatalog();
+          const jsonSize = JSON.stringify(catalog).length;
+          console.log(`[rpc] getStoreCatalog returning ${catalog.sites.length} sites (${(jsonSize / 1024).toFixed(0)} KB)`);
+          return catalog;
         } catch (err) {
           console.error("Failed to fetch catalog:", err);
           return null;
