@@ -1,14 +1,25 @@
 import { useCatalog } from "../hooks/useCatalog";
 import SiteCard from "../components/SiteCard";
+import { useEffect } from "react";
+import { rpcEvents } from "../lib/electroview";
 
 function Browse() {
   const { data: catalog, isLoading, error } = useCatalog();
+
+  useEffect(() => {
+    const unsubscribe = rpcEvents.subscribeToProgress((progress) => {
+      console.log("[Download Progress]", progress.progress);
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto p-8 flex justify-center">
       <div className="w-full max-w-[1400px]">
         <h1 className="text-2xl font-bold text-[var(--color-accent)] mb-1">Browse</h1>
-        <p className="text-sm text-[var(--color-muted)] mb-8">Discover content for offline reading</p>
+        <p className="text-sm text-[var(--color-muted)] mb-8">
+          Discover content for offline reading
+        </p>
 
         {isLoading ? (
           <p className="text-sm text-[var(--color-muted)] animate-pulse">Loading catalog...</p>

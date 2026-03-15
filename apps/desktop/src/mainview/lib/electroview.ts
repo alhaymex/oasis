@@ -16,9 +16,9 @@ const rpc = Electroview.defineRPC<AppRPCSchema>({
   handlers: {
     requests: {},
     messages: {
-      onDownloadProgress: (progress) => {
-        progressListeners.forEach(cb => cb(progress));
-      }
+     onDownloadProgress: (progress) => {
+      console.log(`[PROGRESS]: ${progress.progress}`);
+     } 
     },
   },
 });

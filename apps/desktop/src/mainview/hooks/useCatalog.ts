@@ -6,11 +6,11 @@ export function useCatalog() {
   return useQuery<StoreCatalog>({
     queryKey: ["store-catalog"],
     queryFn: async () => {
-      const data = await api.getStoreCatalog();
-      if (!data || !data.sites) {
+      const res = await api.getStoreCatalog();
+      if (!res || !res.sites) {
         throw new Error("Catalog not available");
       }
-      return data;
+      return res;
     },
     staleTime: 5 * 60 * 1000, 
     gcTime: 30 * 60 * 1000,
