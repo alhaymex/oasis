@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/alhaymex/oasis/compare/oasis-v1.2.0...oasis-v1.3.0) (2026-03-15)
+
+
+### Features
+
+* zustand store for downloads ([#9](https://github.com/alhaymex/oasis/issues/9)) ([fd99695](https://github.com/alhaymex/oasis/commit/fd996950aaaf350f6805c2b0250f7e14f218cc9e))
+
 ## [1.2.0](https://github.com/alhaymex/oasis/compare/oasis-v1.1.0...oasis-v1.2.0) (2026-03-14)
 
 
