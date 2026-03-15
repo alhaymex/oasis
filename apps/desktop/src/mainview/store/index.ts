@@ -1,6 +1,5 @@
 import { DownloadProgressInfo } from "../../shared/types";
 import { create } from "zustand";
-import { rpcEvents } from "../lib/electroview";
 import { api } from "../lib/rpcClient";
 
 interface DownloadStore {
@@ -36,8 +35,4 @@ api.getActiveDownloads()?.then((downloads) => {
   if (downloads) {
     useDownloadStore.getState().setAllDownloads(downloads);
   }
-});
-
-rpcEvents.subscribeToProgress((progress) => {
-  useDownloadStore.getState().updateProgress(progress);
 });

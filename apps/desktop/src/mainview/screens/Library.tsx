@@ -1,12 +1,7 @@
-import { useEffect } from "react";
 import { useLibrary } from "../hooks/useLibrary";
-import { api } from "../lib/rpcClient";
-import { rpcEvents } from "../lib/electroview";
 
 function Library() {
-  const { data, isLoading, error } = useLibrary();
-
-
+  const { data, isLoading } = useLibrary();
 
   if (isLoading) return <h1>Loading library</h1>
   

@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { useSiteDetail } from "../hooks/useCatalog";
 import { api } from "../lib/rpcClient";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, CheckCircle2 } from "lucide-react";
+import { useDownloadStore } from "../store";
 
 export default function SiteDetail() {
   const { siteId } = useParams<{ siteId: string }>();
@@ -47,23 +48,48 @@ export default function SiteDetail() {
       </h2>
 
       <div className="flex flex-col gap-3">
-        {site.variants.map((v) => (
-          <div
-            key={v.id}
-            className="flex items-center justify-between gap-4 p-4 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 transition-colors"
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[var(--color-accent)] truncate">{v.name}</p>
-              <p className="text-xs text-[var(--color-muted)] mt-0.5">{v.sizeStr}</p>
-            </div>
-            <button
-              onClick={() => handleDownload(v.id, v.url, v.filename)}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-md bg-[var(--color-primary)] text-[var(--color-bg)] hover:brightness-110 transition-all shrink-0"
+        {site.variants.map((v) => {
+          const download = useDownloadStore((state) => state.downloads[v.id]);
+          const isDownloading = download?.status === "downloading";
+          const isCompleted = download?.status === "completed";
+
+          return (
+            <div
+              key={v.id}
+              className="flex items-center justify-between gap-4 p-4 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 transition-colors"
             >
-              <Download className="w-3.5 h-3.5" /> Download
-            </button>
-          </div>
-        ))}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[var(--color-accent)] truncate">{v.name}</p>
+                <p className="text-xs text-[var(--color-muted)] mt-0.5">{v.sizeStr}</p>
+              </div>
+
+              {isDownloading ? (
+                <div className="flex flex-col items-end gap-1.5 shrink-0 min-w-[100px]">
+                  <span className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-tight">
+                    Downloading {Math.round(download.progress)}%
+                  </span>
+                  <div className="w-full h-1 bg-[var(--color-bg)] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[var(--color-primary)] transition-all duration-300"
+                      style={{ width: `${download.progress}%` }}
+                    />
+                  </div>
+                </div>
+              ) : isCompleted ? (
+                <div className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-green-400 shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Ready
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleDownload(v.id, v.url, v.filename)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-md bg-[var(--color-primary)] text-[var(--color-bg)] hover:brightness-110 transition-all shrink-0"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

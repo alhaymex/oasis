@@ -7,10 +7,12 @@ import Settings from "./screens/Settings";
 import Browse from "./screens/Browse";
 import SiteDetail from "./screens/SiteDetail";
 import { api } from "./lib/rpcClient";
+import { useDownloadStore } from "./store";
 
 const queryClient = new QueryClient();
 
-// Prefetch catalog at app startup so Browse loads instantly
+useDownloadStore.getState();
+
 queryClient.prefetchQuery({
   queryKey: ["store-catalog"],
   queryFn: async () => {

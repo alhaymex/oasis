@@ -58,7 +58,12 @@ const bottomItems = [
   },
 ];
 
+import { useDownloadStore } from "../store";
+
 function Sidebar() {
+  const downloads = useDownloadStore((state) => state.downloads);
+  const isDownloading = Object.values(downloads).some((d) => d.status === "downloading");
+
   return (
     <div
       className="sticky top-0 left-0 h-screen w-16 flex flex-col items-center py-4 border-r"
@@ -67,17 +72,21 @@ function Sidebar() {
         borderColor: "var(--color-border)",
       }}
     >
-      {/* Top Items */}
       <div className="flex flex-col items-center gap-3 flex-1">
         {topItems.map((i) => (
           <SidebarIcon key={i.title} icon={i.icon} tooltip={i.tooltip} url={i.url} />
         ))}
       </div>
 
-      {/* Bottom Items */}
       <div className="flex flex-col items-center gap-3">
         {bottomItems.map((i) => (
-          <SidebarIcon key={i.title} icon={i.icon} tooltip={i.tooltip} url={i.url} />
+          <SidebarIcon
+            key={i.title}
+            icon={i.icon}
+            tooltip={i.tooltip}
+            url={i.url}
+            showBadge={i.title === "Downloads" && isDownloading}
+          />
         ))}
       </div>
     </div>
@@ -88,10 +97,12 @@ function SidebarIcon({
   icon: Icon,
   tooltip,
   url,
+  showBadge,
 }: {
   icon: LucideIcon;
   tooltip: string;
   url: string;
+  showBadge?: boolean;
 }) {
   const location = useLocation();
   const isActive = location.pathname === url;
@@ -112,9 +123,16 @@ function SidebarIcon({
         }}
       >
         <Icon className="w-6 h-6" />
+
+        {showBadge && (
+          <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-primary)]"></span>
+          </span>
+        )}
       </div>
 
-      {/* Tooltip */}
+
       <div
         className="absolute left-full ml-2 px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 z-50"
         style={{
@@ -124,7 +142,6 @@ function SidebarIcon({
         }}
       >
         {tooltip}
-        {/* Arrow */}
         <div
           className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent"
           style={{ borderRightColor: "var(--color-border)" }}
