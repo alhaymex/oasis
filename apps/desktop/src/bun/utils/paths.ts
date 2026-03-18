@@ -26,6 +26,18 @@ export const BIN_DIR = join(APP_ROOT, "bin");
 export const TMP_DIR = join(APP_ROOT, ".tmp-engine");
 export const DEFAULT_LIBRARY_DIR = join(os.homedir(), "oasis-library");
 
+export function getConfigDir(): string {
+  const home = os.homedir();
+  switch (process.platform) {
+    case "win32":
+      return join(process.env.APPDATA || join(home, "AppData", "Roaming"), "oasis");
+    case "darwin":
+      return join(home, "Library", "Application Support", "oasis");
+    default:
+      return join(process.env.XDG_CONFIG_HOME || join(home, ".config"), "oasis");
+  }
+}
+
 export function getBinPath(binaryName: string): string {
   return join(BIN_DIR, binaryName);
 }

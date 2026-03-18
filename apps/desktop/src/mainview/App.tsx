@@ -1,4 +1,4 @@
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Sidebar from "./components/Sidebar";
 import Downloads from "./screens/Downloads";
@@ -8,6 +8,7 @@ import Browse from "./screens/Browse";
 import SiteDetail from "./screens/SiteDetail";
 import { api } from "./lib/rpcClient";
 import { useDownloadStore } from "./store";
+import View from "./screens/View";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,7 @@ queryClient.prefetchQuery({
 });
 
 function NotFound() {
-  return <h1>404 - Page not found</h1>
+  return <h1>404 - Page not found</h1>;
 }
 
 const App = () => {
@@ -33,11 +34,13 @@ const App = () => {
         <div className="flex">
           <Sidebar />
           <Routes>
+            <Route path="/" element={<Navigate to="/library" />} />
             <Route path="/library" element={<Library />} />
             <Route path="/browse" element={<Browse />} />
             <Route path="/browse/:siteId" element={<SiteDetail />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/downloads" element={<Downloads />} />
+            <Route path="/view/:id" element={<View />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
@@ -47,4 +50,3 @@ const App = () => {
 };
 
 export default App;
-

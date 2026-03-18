@@ -1,6 +1,7 @@
-import { readdirSync, readFileSync, writeFileSync, unlinkSync } from "fs";
+import { readdirSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
 import { join, basename } from "path";
 import { ensureDir, pathExists } from "./paths";
+import { getBookById, getDownloadedBooks, updateBookDownloadStatus } from "../../db/queries";
 
 const LIBRARY_XML_FILENAME = "library.xml";
 
@@ -41,6 +42,13 @@ export class ZimManager {
       throw new Error(`ZIM file not found: ${filename}`);
     }
     unlinkSync(filePath);
+
+    try {
+      await updateBookDownloadStatus(filename, false, undefined);
+    } catch (err) {
+      console.error(`[ZimManager] Failed to update DB status for deleted ${filename}:`, err);
+    }
+
     this.removeBookFromXml(filename);
   }
 
@@ -52,23 +60,30 @@ export class ZimManager {
     return this.libraryPath;
   }
 
-  initLibraryXml(): void {
+  async initLibraryXml(): Promise<void> {
     const zimFiles = this.getZimFiles();
     const existingIds = this.getBookIds();
+    let hasChanged = false;
+
+    const books = this.readBooks();
 
     for (const zimFile of zimFiles) {
       const id = this.filenameToId(zimFile);
       if (!existingIds.has(id)) {
-        this.addBookToXml(zimFile);
+        const zimPath = join(this.libraryPath, zimFile);
+        books.push({ id, path: zimPath });
+        hasChanged = true;
+        console.log(`[ZimManager] Queued "${zimFile} for the library.xml"`);
       }
     }
 
-    if (!pathExists(this.libraryXmlPath)) {
-      this.writeLibraryXml([]);
+    if (hasChanged || !pathExists(this.libraryXmlPath)) {
+      await this.writeLibraryXml(books);
+      console.log(`[ZimManager] Successfully updated library.xml`);
     }
   }
 
-  addBookToXml(zimFilename: string): void {
+  async addBookToXml(zimFilename: string): Promise<void> {
     const books = this.readBooks();
     const id = this.filenameToId(zimFilename);
     if (books.some((b) => b.id === id)) {
@@ -77,18 +92,19 @@ export class ZimManager {
 
     const zimPath = join(this.libraryPath, zimFilename);
     books.push({ id, path: zimPath });
-    this.writeLibraryXml(books);
+    await this.writeLibraryXml(books);
 
     console.log(`[ZimManager] Added "${zimFilename}" to library.xml`);
   }
 
-  removeBookFromXml(zimFilename: string): void {
+  // TODO: update to bulk remove
+  async removeBookFromXml(zimFilename: string): Promise<void> {
     const books = this.readBooks();
     const id = this.filenameToId(zimFilename);
     const filtered = books.filter((b) => b.id !== id);
 
     if (filtered.length !== books.length) {
-      this.writeLibraryXml(filtered);
+      await this.writeLibraryXml(filtered);
       console.log(`[ZimManager] Removed "${zimFilename}" from library.xml`);
     }
   }
@@ -108,8 +124,7 @@ export class ZimManager {
 
     const xml = readFileSync(this.libraryXmlPath, "utf-8");
     const books: { id: string; path: string }[] = [];
-    const bookRegex = /<book\s+id="([^"]*?)"\s+path="([^"]*?)"\s*\/?>/g;
-
+    const bookRegex = /<book\s+id="([^"]*?)"\s+path="([^"]*?)"[^>]*>/g;
     let match;
     while ((match = bookRegex.exec(xml)) !== null) {
       books.push({ id: match[1], path: match[2] });
@@ -118,14 +133,35 @@ export class ZimManager {
     return books;
   }
 
-  private writeLibraryXml(books: { id: string; path: string }[]): void {
-    const bookEntries = books
-      .map((b) => `  <book id="${this.escapeXml(b.id)}" path="${this.escapeXml(b.path)}" />`)
-      .join("\n");
+  private async writeLibraryXml(books: { id: string; path: string }[]): Promise<void> {
+    const dbBooks = await getDownloadedBooks();
+    const dbMap = new Map(dbBooks.map((b) => [b.id, b]));
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<library version="1.0">\n${bookEntries}\n</library>\n`;
+    const bookEntries = await Promise.all(
+      books.map(async (b) => {
+        const metadata = dbMap.get(b.id) || (await getBookById(b.id));
 
-    writeFileSync(this.libraryXmlPath, xml, "utf-8");
+        const title = metadata?.title || b.id;
+        const description = metadata?.summary || "";
+        const language = metadata?.language || "";
+        const creator = metadata?.author || "";
+
+        // library.xml format for Kiwix
+        return `  <book id="${this.escapeXml(b.id)}" 
+    path="${this.escapeXml(b.path)}" 
+    title="${this.escapeXml(title)}" 
+    description="${this.escapeXml(description)}" 
+    language="${this.escapeXml(language)}" 
+    creator="${this.escapeXml(creator)}" />`;
+      })
+    );
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<library version="1.0">\n${bookEntries.join("\n")}\n</library>\n`;
+
+    const tempPath = `${this.libraryXmlPath}.tmp`;
+    writeFileSync(tempPath, xml, "utf-8");
+
+    renameSync(tempPath, this.libraryXmlPath);
   }
 
   private escapeXml(str: string): string {

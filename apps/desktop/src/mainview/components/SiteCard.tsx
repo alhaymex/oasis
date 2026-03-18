@@ -20,15 +20,11 @@ export default function SiteCard({ site }: SiteCardProps) {
       to={`/browse/${site.id}`}
       className="group relative flex flex-col w-full max-w-[12rem] cursor-pointer transition-transform duration-300 hover:-translate-y-1 focus:outline-none"
     >
-      {/* Book spine + cover */}
       <div className="relative w-full aspect-[3/4] rounded-md overflow-hidden shadow-lg ring-1 ring-[var(--color-border)] group-hover:ring-[var(--color-primary)] transition-all duration-300">
-        {/* Spine edge */}
         <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/50 to-transparent z-10" />
 
-        {/* Cover background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-surface)] via-[#15303f] to-[var(--color-bg)]" />
 
-        {/* Cover content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full p-5 gap-4">
           <div className="text-[var(--color-primary)] opacity-80 group-hover:opacity-100 transition-opacity">
             {icon}
@@ -41,11 +37,9 @@ export default function SiteCard({ site }: SiteCardProps) {
           </span>
         </div>
 
-        {/* Bottom highlight */}
         <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
       </div>
 
-      {/* Variant count label */}
       <span className="mt-2 text-xs text-[var(--color-muted)] text-center">
         {site.variants.length} {site.variants.length === 1 ? "version" : "versions"}
       </span>

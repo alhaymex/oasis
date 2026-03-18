@@ -1,11 +1,12 @@
 import type { StoreCatalog, StoreSite, StoreVariant } from "../../shared/types";
+import { upsertBooks, type NewBook } from "../../db/queries";
 
 const KIWIX_OPDS_URL = "https://library.kiwix.org/catalog/v2/entries?count=200";
 const CURATED_CATALOG_URL = "https://raw.githubusercontent.com/alhaymex/oasis/main/catalog/catalog.json";
 
 const log = (msg: string, ...args: any[]) => console.log(`[catalog-fetcher] ${msg}`, ...args);
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const units = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
@@ -13,7 +14,6 @@ function formatBytes(bytes: number): string {
   return `${val.toFixed(1)} ${units[i]}`;
 }
 
-/** Capitalize first letter of each word */
 function titleCase(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -23,15 +23,14 @@ interface OPDSEntry {
   title: string;
   summary: string;
   language: string;
-  name: string;       // e.g. "wikipedia_ce_all"
-  category: string;   // e.g. "wikipedia"
+  name: string;       
+  category: string;   
   author: string;
   downloadUrl: string;
   sizeBytes: number;
 }
 
 function parseOPDSEntries(xml: string): OPDSEntry[] {
-  // Simple regex-based XML parser since we're in Bun (no DOMParser)
   const entries: OPDSEntry[] = [];
   const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
   let match;
@@ -49,17 +48,15 @@ function parseOPDSEntries(xml: string): OPDSEntry[] {
       return m ? m[1].trim() : "";
     };
 
-    // Extract the download link (acquisition)
     const linkMatch = block.match(
       /<link[^>]*rel="http:\/\/opds-spec\.org\/acquisition\/open-access"[^>]*href="([^"]*)"[^>]*length="(\d+)"/
     );
 
-    if (!linkMatch) continue; // skip entries without a download link
+    if (!linkMatch) continue;
 
     let downloadUrl = linkMatch[1];
     const sizeBytes = parseInt(linkMatch[2], 10);
 
-    // The URL typically ends with .meta4 — strip it to get the direct .zim link
     if (downloadUrl.endsWith(".meta4")) {
       downloadUrl = downloadUrl.slice(0, -6);
     }
@@ -85,7 +82,6 @@ function groupEntriesIntoSites(entries: OPDSEntry[]): StoreSite[] {
   const siteMap = new Map<string, { entries: OPDSEntry[]; author: string; firstTitle: string }>();
 
   for (const entry of entries) {
-    // Use category if available, otherwise derive from the name (e.g. "wikipedia_en_all" -> "wikipedia")
     const groupKey = entry.category || entry.name.split("_")[0] || "other";
 
     if (!siteMap.has(groupKey)) {
@@ -103,7 +99,6 @@ function groupEntriesIntoSites(entries: OPDSEntry[]): StoreSite[] {
   for (const [key, group] of siteMap) {
     const variants: StoreVariant[] = group.entries.map((e) => {
       const filename = e.downloadUrl.split("/").pop() || `${e.name}.zim`;
-      // Build a human-readable variant name from the title + language
       const langLabel = e.language ? ` (${e.language.toUpperCase()})` : "";
 
       return {
@@ -115,14 +110,12 @@ function groupEntriesIntoSites(entries: OPDSEntry[]): StoreSite[] {
       };
     });
 
-    // Sort variants by size descending
     variants.sort((a, b) => {
       const sizeA = parseFloat(a.sizeStr);
       const sizeB = parseFloat(b.sizeStr);
       return sizeB - sizeA;
     });
 
-    // Limit variants per site to keep payload small
     if (variants.length > 10) variants.length = 10;
 
     sites.push({
@@ -134,13 +127,11 @@ function groupEntriesIntoSites(entries: OPDSEntry[]): StoreSite[] {
     });
   }
 
-  // Sort sites alphabetically
   sites.sort((a, b) => a.name.localeCompare(b.name));
 
   return sites;
 }
 
-/** Fetch the curated catalog from GitHub */
 async function fetchCuratedCatalog(): Promise<StoreCatalog | null> {
   try {
     log("Fetching curated catalog from GitHub...");
@@ -158,24 +149,23 @@ async function fetchCuratedCatalog(): Promise<StoreCatalog | null> {
   }
 }
 
-/** Fetch and parse the full Kiwix OPDS catalog */
-async function fetchKiwixCatalog(): Promise<StoreSite[]> {
+async function fetchKiwixCatalog(): Promise<{ sites: StoreSite[]; entries: OPDSEntry[] }> {
   try {
     log("Fetching Kiwix OPDS catalog (this may take a few seconds)...");
     const res = await fetch(KIWIX_OPDS_URL);
     if (!res.ok) {
       log(`Kiwix OPDS fetch failed: ${res.status}`);
-      return [];
+      return { sites: [], entries: [] };
     }
     const xml = await res.text();
     log(`Kiwix OPDS response: ${(xml.length / 1024).toFixed(0)} KB`);
     const entries = parseOPDSEntries(xml);
     const sites = groupEntriesIntoSites(entries);
     log(`Grouped into ${sites.length} sites`);
-    return sites;
+    return { sites, entries };
   } catch (err) {
     console.error("Failed to fetch Kiwix OPDS catalog:", err);
-    return [];
+    return { sites: [], entries: [] };
   }
 }
 
@@ -186,18 +176,60 @@ async function fetchKiwixCatalog(): Promise<StoreSite[]> {
  */
 export async function fetchMergedCatalog(): Promise<StoreCatalog> {
   log("Starting merged catalog fetch...");
-  const [curated, kiwixSites] = await Promise.all([
+  const [curated, kiwixResult] = await Promise.all([
     fetchCuratedCatalog(),
     fetchKiwixCatalog(),
   ]);
 
   const curatedSites = curated?.sites ?? [];
+  const kiwixSites = kiwixResult.sites;
+  const kiwixEntries = kiwixResult.entries;
+
   const curatedIds = new Set(curatedSites.map((s) => s.id));
 
-  // Filter out OPDS sites that are already in the curated list
   const uniqueKiwixSites = kiwixSites.filter((s) => !curatedIds.has(s.id));
 
   log(`Merged: ${curatedSites.length} curated + ${uniqueKiwixSites.length} kiwix = ${curatedSites.length + uniqueKiwixSites.length} total sites`);
+
+  const dbBooks: NewBook[] = [];
+
+  for (const entry of kiwixEntries) {
+    const filename = entry.downloadUrl.split("/").pop() || `${entry.name}.zim`;
+    dbBooks.push({
+      id: filename,
+      opdsId: entry.id,
+      name: entry.name,
+      title: entry.title,
+      summary: entry.summary,
+      language: entry.language,
+      author: entry.author,
+      category: entry.category,
+      sizeBytes: entry.sizeBytes,
+      downloadUrl: entry.downloadUrl,
+    });
+  }
+
+  for (const site of curatedSites) {
+    for (const variant of site.variants) {
+      dbBooks.push({
+        id: variant.filename,
+        name: variant.id,
+        title: variant.name,
+        summary: site.description,
+        downloadUrl: variant.url,
+        category: site.id,
+      });
+    }
+  }
+
+  try {
+    // NOTE: we store the entire catalog in the local db
+    // this seems like the best option for now
+    await upsertBooks(dbBooks);
+    log(`Stored metadata for ${dbBooks.length} variants in DB`);
+  } catch (err) {
+    log("Failed to store metadata in DB:", err);
+  }
 
   return {
     sites: [...curatedSites, ...uniqueKiwixSites],

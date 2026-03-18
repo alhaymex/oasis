@@ -1,8 +1,9 @@
 import { join } from "path";
-import { DownloadProgressInfo } from "@/shared/types";
+import { DownloadProgressInfo } from "../../shared/types";
 import { getLibraryPath } from "./paths";
 import { ZimManager } from "./zim-manager";
 import { rename } from "fs/promises";
+import { updateBookDownloadStatus } from "../../db/queries";
 
 export class ZimDownloader {
   private libraryPath: string;
@@ -104,6 +105,13 @@ export class ZimDownloader {
       info.bytesPerSec = 0;
 
       this.notifyProgress(info);
+
+      // Update DB status
+      try {
+        await updateBookDownloadStatus(filename, true, finalPath);
+      } catch (err) {
+        console.error(`[ZimDownloader] Failed to update DB status for ${filename}:`, err);
+      }
 
       this.zimManager.addBookToXml(filename);
     } catch (error: any) {
