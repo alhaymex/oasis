@@ -1,32 +1,55 @@
-import { chmod, rm } from "fs/promises";
+import { chmod, rm, mkdir } from "fs/promises";
 import { join } from "path";
-import extractZip from "extract-zip";
-import * as tar from "tar";
 import { BIN_DIR, TMP_DIR, getBinPath, pathExists, ensureDir } from "./paths";
 
-const CONFIG = {
-  win32: {
-    url: "https://download.kiwix.org/release/kiwix-tools/kiwix-tools_win-i686.zip",
-    type: "zip",
+type OS = "win32" | "linux" | "darwin";
+type Arch = "x64" | "arm64";
+type PlatformKey = `${OS}-${Arch}`
+
+interface EngineConfig {
+  url: string;
+  extractPath: string;
+  finalName: string
+}
+
+const CONFIG: Record<string, EngineConfig> = {
+  "win32-x64": {
+    url: "https://github.com/alhaymex/oasis/releases/download/oasis-v1.0.0/kiwix-serve-win.exe",
     extractPath: "kiwix-serve.exe",
     finalName: "kiwix-serve-win.exe",
   },
-  darwin: {
+  "linux-x64": {
+    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-linux-x64",
+    extractPath: "kiwix-serve-linux",
+    finalName: "kiwix-serve-linux",
+  },
+  "linux-arm64": {
+    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-linux",
+    extractPath: "kiwix-serve-linux",
+    finalName: "kiwix-serve-linux",
+  },
+  "darwin-x64": {
     url: "https://download.kiwix.org/release/kiwix-tools/kiwix-tools_win-i686.zip",
-    type: "zip",
     extractPath: "kiwix-tools_win-i686/kiwix-serve.exe",
     finalName: "kiwix-serve-win.exe",
   },
-  linux: {
-    url: "https://download.kiwix.org/release/kiwix-tools/kiwix-tools_win-i686.zip",
-    type: "zip",
-    extractPath: "kiwix-tools_win-i686/kiwix-serve.exe",
-    finalName: "kiwix-serve-win.exe",
+
+  "darwin-arm64": {
+    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-linux",
+    extractPath: "kiwix-serve-linux",
+    finalName: "kiwix-serve-linux",
   },
 };
 
-const currOS = process.platform as "win32" | "darwin" | "linux";
-const target = CONFIG[currOS];
+const currOS = process.platform as OS;
+const currArch = process.arch as Arch;
+const platormKey: PlatformKey = `${currOS}-${currArch}`;
+
+const target = CONFIG[platormKey];
+
+if (!target) {
+  throw new Error(`Unsuported platform: ${platormKey}`);
+}
 
 export async function isEngineInstalled(): Promise<boolean> {
   return pathExists(getBinPath(target.finalName));
@@ -41,24 +64,19 @@ export async function installEngine(onStatusUpdate?: (msg: string) => void) {
   ensureDir(BIN_DIR);
   ensureDir(TMP_DIR);
 
-  const archivePath = join(TMP_DIR, `engine.${target.type}`);
+  const downloadFilePath = join(TMP_DIR, target.extractPath);
   const finalDest = getBinPath(target.finalName);
 
   onStatusUpdate?.(`Downloading engine for ${currOS}...`);
+
   const response = await fetch(target.url);
   if (!response.ok) throw new Error("Failed to download engine from Kiwix mirror.");
-  await Bun.write(archivePath, response);
 
-  onStatusUpdate?.("Extracting archive...");
-  if (target.type === "zip") {
-    await extractZip(archivePath, { dir: TMP_DIR });
-  } else {
-    await tar.x({ file: archivePath, cwd: TMP_DIR });
-  }
+  await Bun.write(downloadFilePath, response);
 
-  onStatusUpdate?.("Installing core engine...");
-  const extractedFile = join(TMP_DIR, target.extractPath);
-  const fileData = await Bun.file(extractedFile).arrayBuffer();
+  onStatusUpdate?.("Finalizing installation...");
+
+  const fileData = await Bun.file(downloadFilePath).arrayBuffer();
   await Bun.write(finalDest, fileData);
 
   if (currOS !== "win32") {
