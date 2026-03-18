@@ -1,6 +1,7 @@
 import type { StoreCatalog, StoreSite, StoreVariant } from "../../shared/types";
 import { upsertBooks, type NewBook } from "../../db/queries";
 
+// TODO: extract this into a rest api
 const KIWIX_OPDS_URL = "https://library.kiwix.org/catalog/v2/entries?count=200";
 const CURATED_CATALOG_URL = "https://raw.githubusercontent.com/alhaymex/oasis/main/catalog/catalog.json";
 
