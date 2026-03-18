@@ -8,6 +8,7 @@ import Browse from "./screens/Browse";
 import SiteDetail from "./screens/SiteDetail";
 import { api } from "./lib/rpcClient";
 import { useDownloadStore } from "./store";
+import View from "./screens/View";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => {
             <Route path="/browse/:siteId" element={<SiteDetail />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/downloads" element={<Downloads />} />
+            <Route path="/view/:id" element={<View />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

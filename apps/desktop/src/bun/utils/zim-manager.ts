@@ -124,8 +124,7 @@ export class ZimManager {
 
     const xml = readFileSync(this.libraryXmlPath, "utf-8");
     const books: { id: string; path: string }[] = [];
-    const bookRegex = /<book\s+id="([^"]*?)"\s+path="([^"]*?)"\s*\/?>/g;
-
+    const bookRegex = /<book\s+id="([^"]*?)"\s+path="([^"]*?)"[^>]*>/g;
     let match;
     while ((match = bookRegex.exec(xml)) !== null) {
       books.push({ id: match[1], path: match[2] });

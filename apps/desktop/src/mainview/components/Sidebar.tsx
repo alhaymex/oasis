@@ -66,7 +66,7 @@ function Sidebar() {
 
   return (
     <div
-      className="sticky top-0 left-0 h-screen w-16 flex flex-col items-center py-4 border-r"
+      className="sticky top-0 left-0 h-screen w-16 flex flex-col items-center py-4 border-r z-10"
       style={{
         backgroundColor: "var(--color-surface)",
         borderColor: "var(--color-border)",
