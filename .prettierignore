@@ -1,0 +1,17 @@
+# Ignore auto-generated changelogs (used by release-please)
+CHANGELOG.md
+**/CHANGELOG.md
+
+# Build artifacts
+dist/
+out/
+build/
+.turbo/
+.electrobun/
+
+# Config files (best managed as-is)
+*.config.ts
+*.config.js
+
+# Dependencies
+node_modules/
