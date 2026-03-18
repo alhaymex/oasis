@@ -5,12 +5,33 @@ import { ZimManager } from "./utils/zim-manager";
 import { ZimDownloader } from "./utils/download-manager";
 import { fetchMergedCatalog } from "./utils/catalog-fetcher";
 
-const configManager = new ConfigManager();
-configManager.init().catch(console.error);
+let configManager = new ConfigManager();
+let zimManager: ZimManager;
+let zimDownloader: ZimDownloader;
 
-const config = configManager.getConfig();
-const zimManager = new ZimManager(config.libraryPath);
-const zimDownloader = new ZimDownloader(zimManager);
+export async function initServices() {
+  await configManager.init();
+  const config = configManager.getConfig();
+  
+  const { initDb, db } = await import("../db/index");
+  const { runMigrations } = await import("../db/migrate");
+  const { join } = await import("path");
+  initDb(join(config.libraryPath, "oasis.sqlite"));
+  
+  // Auto-migrate on startup
+  try {
+    await runMigrations(db);
+  } catch (err) {
+    console.error("[db] Auto-migration failed:", err);
+  }
+
+  zimManager = new ZimManager(config.libraryPath);
+  zimDownloader = new ZimDownloader(zimManager);
+  
+  zimDownloader.setProgressCallback((progress) => {
+    rpc.send("onDownloadProgress", progress);
+  });
+}
 
 export const rpc = BrowserView.defineRPC<AppRPCSchema>({
   maxRequestTime: 60_000,
@@ -38,4 +59,8 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
   },
 });
 
-export { configManager, zimManager, zimDownloader };
+export { configManager };
+export const getZimManager = () => zimManager;
+export const getZimDownloader = () => zimDownloader;
+
+export { zimManager, zimDownloader };

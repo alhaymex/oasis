@@ -1,6 +1,6 @@
 import { BrowserWindow, Updater } from "electrobun/bun";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
-import { rpc, configManager, zimManager, zimDownloader } from "./rpc";
+import { rpc, configManager, zimManager, zimDownloader, initServices } from "./rpc";
 import { KiwixServer } from "./utils/kiwix-server";
 
 const DEV_SERVER_PORT = 5173;
@@ -23,7 +23,7 @@ async function getMainViewUrl(): Promise<string> {
 }
 
 async function start() {
-  await configManager.init();
+  await initServices();
 
   const url = await getMainViewUrl();
 
@@ -46,12 +46,8 @@ async function start() {
     splashWin.close();
   }
 
+  await zimManager.initLibraryXml();
 
-
-  // Sync existing ZIM files into library.xml
-  zimManager.initLibraryXml();
-
-  // Always start kiwix-serve in library mode — it monitors for changes
   kiwixServer.start(zimManager.getLibraryXmlPath());
 
   const isOnline = await kiwixServer.waitForReady();

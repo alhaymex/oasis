@@ -1,16 +1,36 @@
-import { drizzle } from "drizzle-orm/bun-sqlite";
+import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { Database } from "bun:sqlite";
-import { DB_FILE_NAME } from "../shared/constants";
-import path from "path";
+import { getLibraryPath, ensureDir, APP_ROOT } from "../bun/utils/paths";
+import path, { join } from "path";
+import { existsSync } from "fs";
 
-const sqlite = new Database(DB_FILE_NAME);
-const db = drizzle(sqlite);
+export async function runMigrations(db: BunSQLiteDatabase<any>) {
+  // In development, APP_ROOT is the apps/desktop directory
+  
+  let migrationsFolder = path.join(APP_ROOT, "drizzle");
+  
+  if (!existsSync(migrationsFolder)) {
+     migrationsFolder = path.join(import.meta.dir, "../../drizzle");
+  }
+
+  console.log(`[db] Running migrations from: ${migrationsFolder}`);
+  if (!existsSync(migrationsFolder)) {
+    throw new Error(`Migrations folder not found at: ${migrationsFolder}`);
+  }
+  
+  await migrate(db, { migrationsFolder });
+}
 
 async function main() {
-  console.log("Running migrations...");
+  const dbPath = path.join(getLibraryPath(), "oasis.sqlite");
+  ensureDir(getLibraryPath());
+  const sqlite = new Database(dbPath);
+  const db = drizzle(sqlite);
+
+  console.log("Running migrations via CLI...");
   try {
-    await migrate(db, { migrationsFolder: path.join(import.meta.dir, "../../drizzle") });
+    await runMigrations(db);
     console.log("Migrations completed successfully!");
   } catch (error) {
     console.error("Migration failed:", error);
@@ -20,4 +40,6 @@ async function main() {
   }
 }
 
-main();
+if (import.meta.main) {
+  main();
+}
