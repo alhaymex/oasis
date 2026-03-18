@@ -14,7 +14,7 @@ interface EngineConfig {
 
 const CONFIG: Record<string, EngineConfig> = {
   "win32-x64": {
-    url: "https://github.com/alhaymex/oasis/releases/download/oasis-v1.0.0/kiwix-serve-win.exe",
+    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-win.exe",
     extractPath: "kiwix-serve.exe",
     finalName: "kiwix-serve-win.exe",
   },
@@ -67,7 +67,7 @@ export async function installEngine(onStatusUpdate?: (msg: string) => void) {
   const downloadFilePath = join(TMP_DIR, target.extractPath);
   const finalDest = getBinPath(target.finalName);
 
-  onStatusUpdate?.(`Downloading engine for ${currOS}...`);
+  onStatusUpdate?.(`Downloading engine for ${platormKey}...`);
 
   const response = await fetch(target.url);
   if (!response.ok) throw new Error("Failed to download engine from Kiwix mirror.");

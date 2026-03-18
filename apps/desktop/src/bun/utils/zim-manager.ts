@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, writeFileSync, unlinkSync } from "fs";
+import { readdirSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
 import { join, basename } from "path";
 import { ensureDir, pathExists } from "./paths";
 
@@ -55,16 +55,23 @@ export class ZimManager {
   initLibraryXml(): void {
     const zimFiles = this.getZimFiles();
     const existingIds = this.getBookIds();
+    let hasChanged = false;
+
+    const books = this.readBooks();
 
     for (const zimFile of zimFiles) {
       const id = this.filenameToId(zimFile);
       if (!existingIds.has(id)) {
-        this.addBookToXml(zimFile);
+        const zimPath = join(this.libraryPath, zimFile);
+        books.push({ id, path: zimPath });
+        hasChanged = true;
+        console.log(`[ZimManager] Queued "${zimFile} for the library.xml"`);
       }
     }
 
-    if (!pathExists(this.libraryXmlPath)) {
-      this.writeLibraryXml([]);
+    if (hasChanged || !pathExists(this.libraryXmlPath)) {
+      this.writeLibraryXml(books);
+      console.log(`[ZimManager] Successfully updated library.xml`);
     }
   }
 
@@ -82,6 +89,7 @@ export class ZimManager {
     console.log(`[ZimManager] Added "${zimFilename}" to library.xml`);
   }
 
+  // TODO: update to bulk remove
   removeBookFromXml(zimFilename: string): void {
     const books = this.readBooks();
     const id = this.filenameToId(zimFilename);
@@ -125,7 +133,10 @@ export class ZimManager {
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<library version="1.0">\n${bookEntries}\n</library>\n`;
 
-    writeFileSync(this.libraryXmlPath, xml, "utf-8");
+    const tempPath = `${this.libraryXmlPath}.tmp`;
+    writeFileSync(tempPath, xml, "utf-8");
+
+    renameSync(tempPath, this.libraryXmlPath);
   }
 
   private escapeXml(str: string): string {
