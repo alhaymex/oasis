@@ -6,7 +6,7 @@ const CURATED_CATALOG_URL = "https://raw.githubusercontent.com/alhaymex/oasis/ma
 
 const log = (msg: string, ...args: any[]) => console.log(`[catalog-fetcher] ${msg}`, ...args);
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const units = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));

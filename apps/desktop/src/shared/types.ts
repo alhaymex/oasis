@@ -30,3 +30,19 @@ export interface StoreSite {
 export interface StoreCatalog {
   sites: StoreSite[];
 }
+
+export interface LibraryBook {
+  id: string;
+  opdsId: string | null;
+  name: string | null;
+  title: string | null;
+  summary: string | null;
+  language: string | null;
+  author: string | null;
+  category: string | null;
+  sizeBytes: number | null;
+  downloadUrl: string | null;
+  localPath: string | null;
+  isDownloaded: boolean;
+  updatedAt: Date | null;
+}

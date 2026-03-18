@@ -4,8 +4,9 @@ import { ConfigManager } from "./utils/config-manager";
 import { ZimManager } from "./utils/zim-manager";
 import { ZimDownloader } from "./utils/download-manager";
 import { fetchMergedCatalog } from "./utils/catalog-fetcher";
+import { getDownloadedBooks } from "../db/queries";
 
-let configManager = new ConfigManager();
+const configManager = new ConfigManager();
 let zimManager: ZimManager;
 let zimDownloader: ZimDownloader;
 
@@ -53,7 +54,7 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
         zimDownloader.startDownload(id, url, filename).catch(console.error);
         return true;
       },
-      getLocalLibrary: () => zimManager.getZimFiles(),
+      getLocalLibrary: () => getDownloadedBooks(),
       getActiveDownloads: () => zimDownloader.getActiveDownloads(),
     },
   },
