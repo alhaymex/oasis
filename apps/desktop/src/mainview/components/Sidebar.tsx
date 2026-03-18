@@ -6,7 +6,7 @@ import {
   NotepadText,
   Palette,
   Settings,
-  type LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -131,7 +131,6 @@ function SidebarIcon({
           </span>
         )}
       </div>
-
 
       <div
         className="absolute left-full ml-2 px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 z-50"

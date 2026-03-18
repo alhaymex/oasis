@@ -28,7 +28,10 @@ export default function Downloads() {
             >
               <div className="flex items-center justify-between">
                 <div className="min-w-0 pr-4">
-                  <h3 className="text-[var(--color-accent)] font-semibold truncate" title={d.filename}>
+                  <h3
+                    className="text-[var(--color-accent)] font-semibold truncate"
+                    title={d.filename}
+                  >
                     {d.filename}
                   </h3>
                   <p className="text-xs text-[var(--color-muted)] mt-1 capitalize">
@@ -69,8 +72,8 @@ export default function Downloads() {
                     d.status === "error"
                       ? "bg-red-500"
                       : d.status === "completed"
-                      ? "bg-green-500"
-                      : "bg-[var(--color-primary)]"
+                        ? "bg-green-500"
+                        : "bg-[var(--color-primary)]"
                   }`}
                   style={{ width: `${Math.max(0, Math.min(100, d.progress))}%` }}
                 />

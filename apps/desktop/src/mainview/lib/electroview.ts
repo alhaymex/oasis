@@ -9,8 +9,10 @@ const progressListeners = new Set<ProgressListener>();
 export const rpcEvents = {
   subscribeToProgress: (cb: ProgressListener) => {
     progressListeners.add(cb);
-    return () => { progressListeners.delete(cb); };
-  }
+    return () => {
+      progressListeners.delete(cb);
+    };
+  },
 };
 
 const rpc = Electroview.defineRPC<AppRPCSchema>({

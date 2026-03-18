@@ -23,7 +23,10 @@ export default function SiteDetail() {
   if (!site) {
     return (
       <div className="flex-1 p-8">
-        <Link to="/browse" className="text-sm text-[var(--color-muted)] hover:text-[var(--color-primary)]">
+        <Link
+          to="/browse"
+          className="text-sm text-[var(--color-muted)] hover:text-[var(--color-primary)]"
+        >
           ← Back
         </Link>
         <p className="mt-4 text-[var(--color-accent)]">Site not found.</p>

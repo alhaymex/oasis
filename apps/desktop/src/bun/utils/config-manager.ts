@@ -36,19 +36,22 @@ export class ConfigManager {
         console.error("[ConfigManager] Failed to load bootstrap config:", e);
       }
     } else {
-        await this.saveBootstrap();
+      await this.saveBootstrap();
     }
   }
 
   private async saveBootstrap(): Promise<void> {
     ensureDir(APP_DATA_DIR);
-    await Bun.write(BOOTSTRAP_PATH, JSON.stringify({ libraryPath: this.currentLibraryPath }, null, 2));
+    await Bun.write(
+      BOOTSTRAP_PATH,
+      JSON.stringify({ libraryPath: this.currentLibraryPath }, null, 2)
+    );
   }
 
   private async load(): Promise<void> {
     const configPath = this.getFullConfigPath();
     ensureDir(this.currentLibraryPath);
-    
+
     const file = Bun.file(configPath);
     const exists = await file.exists();
 
@@ -62,7 +65,7 @@ export class ConfigManager {
     try {
       raw = await file.json();
     } catch {
-      console.warn("[ConfigManager] Corrupted JSON detected, resetting config.")
+      console.warn("[ConfigManager] Corrupted JSON detected, resetting config.");
       this.config = { ...DEFAULT_CONFIG, libraryPath: this.currentLibraryPath };
       await this.save();
       return;
@@ -74,8 +77,8 @@ export class ConfigManager {
       this.config = parsed.data;
       // Ensure the config's libraryPath stays in sync with our current boostrap path
       if (this.config.libraryPath !== this.currentLibraryPath) {
-          this.currentLibraryPath = this.config.libraryPath;
-          await this.saveBootstrap();
+        this.currentLibraryPath = this.config.libraryPath;
+        await this.saveBootstrap();
       }
     } else {
       console.warn(
@@ -90,7 +93,7 @@ export class ConfigManager {
   private async save(): Promise<void> {
     const configPath = this.getFullConfigPath();
     ensureDir(this.currentLibraryPath);
-    
+
     const tmp = configPath + ".tmp";
     await Bun.write(tmp, JSON.stringify(this.config, null, 2));
     await rename(tmp, configPath);
@@ -116,11 +119,11 @@ export class ConfigManager {
     }
 
     this.config = parsed.data;
-    
+
     // If libraryPath changed in the partial, we need to update our internal tracker and bootstrap
     if (partial.libraryPath && partial.libraryPath !== this.currentLibraryPath) {
-        this.currentLibraryPath = partial.libraryPath;
-        await this.saveBootstrap();
+      this.currentLibraryPath = partial.libraryPath;
+      await this.saveBootstrap();
     }
 
     await this.save();

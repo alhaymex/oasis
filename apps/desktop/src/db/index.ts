@@ -17,10 +17,10 @@ export const db = new Proxy({} as BunSQLiteDatabase<Record<string, never>>, {
 
 export function initDb(dbPath: string) {
   if (internalDb) {
-    // If we already have a connection, we might want to close it? 
+    // If we already have a connection, we might want to close it?
     // For now, let's just allow re-initialization if needed, though usually it's once.
   }
-  
+
   ensureDir(dirname(dbPath));
   const sqlite = new Database(dbPath);
   internalDb = drizzle(sqlite);
