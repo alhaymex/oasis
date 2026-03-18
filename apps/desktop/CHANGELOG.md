@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/alhaymex/oasis/compare/oasis-v1.4.0...oasis-v1.5.0) (2026-03-18)
+
+
+### Features
+
+* Add `.prettierignore` to exclude build artifacts, changelogs, a… ([#15](https://github.com/alhaymex/oasis/issues/15)) ([721ab1d](https://github.com/alhaymex/oasis/commit/721ab1de84806ade475e8f3caf9dee279958b9bc))
+* introduce catalog-fetcher to retrieve, process, and store book … ([#13](https://github.com/alhaymex/oasis/issues/13)) ([c0ec4a1](https://github.com/alhaymex/oasis/commit/c0ec4a1a43ebbcc7eddfe8f08621988cf4ed44d0))
+
 ## [1.4.0](https://github.com/alhaymex/oasis/compare/oasis-v1.3.0...oasis-v1.4.0) (2026-03-18)
 
 ### Features
