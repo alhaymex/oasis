@@ -4,12 +4,12 @@ import { BIN_DIR, TMP_DIR, getBinPath, pathExists, ensureDir } from "./paths";
 
 type OS = "win32" | "linux" | "darwin";
 type Arch = "x64" | "arm64";
-type PlatformKey = `${OS}-${Arch}`
+type PlatformKey = `${OS}-${Arch}`;
 
 interface EngineConfig {
   url: string;
   extractPath: string;
-  finalName: string
+  finalName: string;
 }
 
 const CONFIG: Record<string, EngineConfig> = {
@@ -24,20 +24,19 @@ const CONFIG: Record<string, EngineConfig> = {
     finalName: "kiwix-serve-linux",
   },
   "linux-arm64": {
-    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-linux",
+    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-linux-arm64",
     extractPath: "kiwix-serve-linux",
     finalName: "kiwix-serve-linux",
   },
   "darwin-x64": {
-    url: "https://download.kiwix.org/release/kiwix-tools/kiwix-tools_win-i686.zip",
-    extractPath: "kiwix-tools_win-i686/kiwix-serve.exe",
-    finalName: "kiwix-serve-win.exe",
+    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-darwin-x64",
+    extractPath: "kiwix-serve-darwin",
+    finalName: "kiwix-serve-darwin",
   },
-
   "darwin-arm64": {
-    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-linux",
-    extractPath: "kiwix-serve-linux",
-    finalName: "kiwix-serve-linux",
+    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-darwin-arm64",
+    extractPath: "kiwix-serve-darwin",
+    finalName: "kiwix-serve-darwin",
   },
 };
 
