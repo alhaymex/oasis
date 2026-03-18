@@ -4,7 +4,7 @@ export interface DownloadProgressInfo {
   id: string;
   filename: string;
   status: DownloadStatus;
-  progress: number; 
+  progress: number;
   downloadedBytes: number;
   totalBytes: number;
   bytesPerSec: number;

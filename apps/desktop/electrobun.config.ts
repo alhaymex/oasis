@@ -19,7 +19,7 @@ export default {
     linux: {
       bundleCEF: true,
       defaultRenderer: "cef",
-      bundleWGPU: true
+      bundleWGPU: true,
     },
     win: {
       bundleCEF: false,

@@ -13,12 +13,12 @@ let zimDownloader: ZimDownloader;
 export async function initServices() {
   await configManager.init();
   const config = configManager.getConfig();
-  
+
   const { initDb, db } = await import("../db/index");
   const { runMigrations } = await import("../db/migrate");
   const { join } = await import("path");
   initDb(join(config.libraryPath, "oasis.sqlite"));
-  
+
   // Auto-migrate on startup
   try {
     await runMigrations(db);
@@ -28,7 +28,7 @@ export async function initServices() {
 
   zimManager = new ZimManager(config.libraryPath);
   zimDownloader = new ZimDownloader(zimManager);
-  
+
   zimDownloader.setProgressCallback((progress) => {
     rpc.send("onDownloadProgress", progress);
   });
@@ -43,7 +43,9 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
         try {
           const catalog = await fetchMergedCatalog();
           const jsonSize = JSON.stringify(catalog).length;
-          console.log(`[rpc] getStoreCatalog returning ${catalog.sites.length} sites (${(jsonSize / 1024).toFixed(0)} KB)`);
+          console.log(
+            `[rpc] getStoreCatalog returning ${catalog.sites.length} sites (${(jsonSize / 1024).toFixed(0)} KB)`
+          );
           return catalog;
         } catch (err) {
           console.error("Failed to fetch catalog:", err);

@@ -8,7 +8,8 @@ export type Book = typeof books.$inferSelect;
 export async function upsertBooks(newBooks: NewBook[]) {
   if (newBooks.length === 0) return;
 
-  return db.insert(books)
+  return db
+    .insert(books)
     .values(newBooks)
     .onConflictDoUpdate({
       target: books.id,
@@ -28,8 +29,13 @@ export async function upsertBooks(newBooks: NewBook[]) {
     .run();
 }
 
-export async function updateBookDownloadStatus(id: string, isDownloaded: boolean, localPath?: string) {
-  return db.update(books)
+export async function updateBookDownloadStatus(
+  id: string,
+  isDownloaded: boolean,
+  localPath?: string
+) {
+  return db
+    .update(books)
     .set({
       isDownloaded,
       localPath,
@@ -40,21 +46,13 @@ export async function updateBookDownloadStatus(id: string, isDownloaded: boolean
 }
 
 export async function getDownloadedBooks() {
-  return db.select()
-    .from(books)
-    .where(eq(books.isDownloaded, true))
-    .all();
+  return db.select().from(books).where(eq(books.isDownloaded, true)).all();
 }
 
 export async function getBookById(id: string) {
-  return db.select()
-    .from(books)
-    .where(eq(books.id, id))
-    .get();
+  return db.select().from(books).where(eq(books.id, id)).get();
 }
 
 export async function deleteBookRecord(id: string) {
-  return db.delete(books)
-    .where(eq(books.id, id))
-    .run();
+  return db.delete(books).where(eq(books.id, id)).run();
 }

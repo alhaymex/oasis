@@ -3,7 +3,8 @@ import { upsertBooks, type NewBook } from "../../db/queries";
 
 // TODO: extract this into a rest api
 const KIWIX_OPDS_URL = "https://library.kiwix.org/catalog/v2/entries?count=200";
-const CURATED_CATALOG_URL = "https://raw.githubusercontent.com/alhaymex/oasis/main/catalog/catalog.json";
+const CURATED_CATALOG_URL =
+  "https://raw.githubusercontent.com/alhaymex/oasis/main/catalog/catalog.json";
 
 const log = (msg: string, ...args: any[]) => console.log(`[catalog-fetcher] ${msg}`, ...args);
 
@@ -24,8 +25,8 @@ interface OPDSEntry {
   title: string;
   summary: string;
   language: string;
-  name: string;       
-  category: string;   
+  name: string;
+  category: string;
   author: string;
   downloadUrl: string;
   sizeBytes: number;
@@ -177,10 +178,7 @@ async function fetchKiwixCatalog(): Promise<{ sites: StoreSite[]; entries: OPDSE
  */
 export async function fetchMergedCatalog(): Promise<StoreCatalog> {
   log("Starting merged catalog fetch...");
-  const [curated, kiwixResult] = await Promise.all([
-    fetchCuratedCatalog(),
-    fetchKiwixCatalog(),
-  ]);
+  const [curated, kiwixResult] = await Promise.all([fetchCuratedCatalog(), fetchKiwixCatalog()]);
 
   const curatedSites = curated?.sites ?? [];
   const kiwixSites = kiwixResult.sites;
@@ -190,7 +188,9 @@ export async function fetchMergedCatalog(): Promise<StoreCatalog> {
 
   const uniqueKiwixSites = kiwixSites.filter((s) => !curatedIds.has(s.id));
 
-  log(`Merged: ${curatedSites.length} curated + ${uniqueKiwixSites.length} kiwix = ${curatedSites.length + uniqueKiwixSites.length} total sites`);
+  log(
+    `Merged: ${curatedSites.length} curated + ${uniqueKiwixSites.length} kiwix = ${curatedSites.length + uniqueKiwixSites.length} total sites`
+  );
 
   const dbBooks: NewBook[] = [];
 

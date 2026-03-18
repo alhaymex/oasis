@@ -7,18 +7,18 @@ import { existsSync } from "fs";
 
 export async function runMigrations(db: BunSQLiteDatabase<any>) {
   // In development, APP_ROOT is the apps/desktop directory
-  
+
   let migrationsFolder = path.join(APP_ROOT, "drizzle");
-  
+
   if (!existsSync(migrationsFolder)) {
-     migrationsFolder = path.join(import.meta.dir, "../../drizzle");
+    migrationsFolder = path.join(import.meta.dir, "../../drizzle");
   }
 
   console.log(`[db] Running migrations from: ${migrationsFolder}`);
   if (!existsSync(migrationsFolder)) {
     throw new Error(`Migrations folder not found at: ${migrationsFolder}`);
   }
-  
+
   await migrate(db, { migrationsFolder });
 }
 
