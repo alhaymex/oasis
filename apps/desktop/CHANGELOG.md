@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/alhaymex/oasis/compare/oasis-v1.3.0...oasis-v1.4.0) (2026-03-18)
+
+
+### Features
+
+* SQLite ([#11](https://github.com/alhaymex/oasis/issues/11)) ([c4ca4c4](https://github.com/alhaymex/oasis/commit/c4ca4c4bac5095979305349877ebd3ed0b76e6a1))
+
 ## [1.3.0](https://github.com/alhaymex/oasis/compare/oasis-v1.2.0...oasis-v1.3.0) (2026-03-15)
 
 
