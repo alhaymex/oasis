@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/alhaymex/oasis/compare/oasis-v1.8.1...oasis-v2.0.0) (2026-03-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* v2 ([#27](https://github.com/alhaymex/oasis/issues/27))
+
+### Features
+
+* v2 ([#27](https://github.com/alhaymex/oasis/issues/27)) ([eb5c0ca](https://github.com/alhaymex/oasis/commit/eb5c0cab3f84aaeef3dd5d759b308479f72c3f9d))
+
 ## [1.8.1](https://github.com/alhaymex/oasis/compare/oasis-v1.8.0...oasis-v1.8.1) (2026-03-19)
 
 
