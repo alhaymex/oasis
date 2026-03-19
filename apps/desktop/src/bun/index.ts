@@ -31,9 +31,10 @@ async function start() {
 
   const url = await getMainViewUrl();
   const hasEngine = await isEngineInstalled();
+  let splashWin: BrowserWindow | null = null;
 
   if (!hasEngine) {
-    const splashWin = new BrowserWindow({
+    splashWin = new BrowserWindow({
       title: "Oasis Setup",
       url: "data:text/html,<h1>Downloading Core Engine... Please wait a minute.</h1>",
       frame: { width: 400, height: 200, x: 400, y: 300 },
@@ -45,8 +46,6 @@ async function start() {
       console.error("Failed to download engine:", err);
       process.exit(1);
     }
-
-    splashWin.close();
   }
 
   await runtime.startServices();
@@ -63,6 +62,8 @@ async function start() {
       y: 200,
     },
   });
+
+  splashWin?.close();
 
   void runtime.getUpdateManager().runAutoUpdateOnLaunch();
 }
