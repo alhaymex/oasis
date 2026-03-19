@@ -1,6 +1,8 @@
 import type { RPCSchema } from "electrobun";
 import type {
-  StoreCatalog,
+  CatalogSiteDetail,
+  CatalogSiteSummary,
+  CatalogVariantResult,
   DownloadProgressInfo,
   LibraryBook,
   LibraryMigrationState,
@@ -8,16 +10,23 @@ import type {
 import type { AppConfig } from "../schema/config";
 
 export type AppRPCSchema = {
-  // functions that can be called from the client
   bun: RPCSchema<{
     requests: {
       ping: {
         params: { msg: string };
         response: void;
       };
-      getStoreCatalog: {
+      getCatalogSites: {
         params: void;
-        response: StoreCatalog | null;
+        response: CatalogSiteSummary[];
+      };
+      getCatalogSite: {
+        params: { siteId: string };
+        response: CatalogSiteDetail | null;
+      };
+      searchCatalog: {
+        params: { query: string; limit?: number };
+        response: CatalogVariantResult[];
       };
       startDownload: {
         params: { id: string; url: string; filename: string };
@@ -51,7 +60,6 @@ export type AppRPCSchema = {
     messages: {};
   }>;
 
-  // functions that can be called from the bun process
   webview: RPCSchema<{
     requests: {};
     messages: {

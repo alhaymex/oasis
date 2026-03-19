@@ -6,7 +6,8 @@ import { useDownloadStore } from "../store";
 
 export default function SiteDetail() {
   const { siteId } = useParams<{ siteId: string }>();
-  const { site, isLoading } = useSiteDetail(siteId);
+  const { data: site, isLoading } = useSiteDetail(siteId);
+  const downloads = useDownloadStore((state) => state.downloads);
 
   const handleDownload = (variantId: string, url: string, filename: string) => {
     api.startDownload(variantId, url, filename);
@@ -52,9 +53,9 @@ export default function SiteDetail() {
 
       <div className="flex flex-col gap-3">
         {site.variants.map((v) => {
-          const download = useDownloadStore((state) => state.downloads[v.id]);
+          const download = downloads[v.id];
           const isDownloading = download?.status === "downloading";
-          const isCompleted = download?.status === "completed";
+          const isCompleted = v.isDownloaded || download?.status === "completed";
 
           return (
             <div
@@ -63,7 +64,7 @@ export default function SiteDetail() {
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-[var(--color-accent)] truncate">{v.name}</p>
-                <p className="text-xs text-[var(--color-muted)] mt-0.5">{v.sizeStr}</p>
+                <p className="text-xs text-[var(--color-muted)] mt-0.5">{v.sizeLabel}</p>
               </div>
 
               {isDownloading ? (
@@ -84,7 +85,7 @@ export default function SiteDetail() {
                 </div>
               ) : (
                 <button
-                  onClick={() => handleDownload(v.id, v.url, v.filename)}
+                  onClick={() => handleDownload(v.id, v.downloadUrl, v.filename)}
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-md bg-[var(--color-primary)] text-[var(--color-bg)] hover:brightness-110 transition-all shrink-0"
                 >
                   <Download className="w-3.5 h-3.5" /> Download

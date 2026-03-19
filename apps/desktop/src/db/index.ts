@@ -1,7 +1,7 @@
 import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { Database } from "bun:sqlite";
 import { dirname } from "path";
-import { ensureDir } from "../bun/utils/paths";
+import { ensureDir, getDatabasePath } from "../bun/utils/paths";
 
 let internalDb: BunSQLiteDatabase<Record<string, never>> | null = null;
 let internalSqlite: Database | null = null;
@@ -31,4 +31,12 @@ export function closeDb() {
     internalSqlite = null;
   }
   internalDb = null;
+}
+
+export function getSqliteClient(): Database {
+  if (!internalSqlite) {
+    initDb(getDatabasePath());
+  }
+
+  return internalSqlite as Database;
 }

@@ -19,13 +19,6 @@ export function findProjectRoot(startPath: string): string {
   return startPath;
 }
 
-export const PROJECT_ROOT = findProjectRoot(__dirname);
-export const isDesktopApp = existsSync(join(PROJECT_ROOT, "apps", "desktop", "package.json"));
-export const APP_ROOT = isDesktopApp ? join(PROJECT_ROOT, "apps", "desktop") : PROJECT_ROOT;
-export const BIN_DIR = join(APP_ROOT, "bin");
-export const TMP_DIR = join(APP_ROOT, ".tmp-engine");
-export const DEFAULT_LIBRARY_DIR = join(os.homedir(), "oasis-library");
-
 export function getConfigDir(): string {
   const home = os.homedir();
   switch (process.platform) {
@@ -41,6 +34,21 @@ export function getConfigDir(): string {
 export function getDatabasePath(): string {
   return join(getConfigDir(), "oasis.sqlite");
 }
+
+const packagedAppRoot = resolve(dirname(process.execPath), "..", "Resources", "app");
+const sourceProjectRoot = findProjectRoot(__dirname);
+const sourceAppRoot = existsSync(join(sourceProjectRoot, "apps", "desktop", "package.json"))
+  ? join(sourceProjectRoot, "apps", "desktop")
+  : null;
+
+export const IS_PACKAGED_APP = sourceAppRoot === null && existsSync(join(packagedAppRoot, "bun"));
+export const PROJECT_ROOT = sourceProjectRoot;
+export const APP_ROOT = sourceAppRoot ?? packagedAppRoot;
+export const BIN_DIR = IS_PACKAGED_APP ? join(getConfigDir(), "bin") : join(APP_ROOT, "bin");
+export const TMP_DIR = IS_PACKAGED_APP
+  ? join(getConfigDir(), ".tmp-engine")
+  : join(APP_ROOT, ".tmp-engine");
+export const DEFAULT_LIBRARY_DIR = join(os.homedir(), "oasis-library");
 
 export function getBinPath(binaryName: string): string {
   return join(BIN_DIR, binaryName);

@@ -1,17 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/rpcClient";
-import type { StoreCatalog, StoreSite } from "@/shared/types";
+import type { CatalogSiteDetail, CatalogSiteSummary, CatalogVariantResult } from "@/shared/types";
 
-export function useCatalog() {
-  return useQuery<StoreCatalog>({
-    queryKey: ["store-catalog"],
-    queryFn: async () => {
-      const res = await api.getStoreCatalog();
-      if (!res || !res.sites) {
-        throw new Error("Catalog not available");
-      }
-      return res;
-    },
+export function useCatalogSites() {
+  return useQuery<CatalogSiteSummary[]>({
+    queryKey: ["catalog-sites"],
+    queryFn: async () => (await api.getCatalogSites()) ?? [],
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     retry: 2,
@@ -21,12 +15,39 @@ export function useCatalog() {
 }
 
 export function useSiteDetail(siteId: string | undefined) {
-  const { data: catalog, ...rest } = useCatalog();
+  return useQuery<CatalogSiteDetail | null>({
+    queryKey: ["catalog-site", siteId],
+    queryFn: async () => {
+      if (!siteId) {
+        return null;
+      }
 
-  const site: StoreSite | undefined = catalog?.sites.find((s) => s.id === siteId);
+      return (await api.getCatalogSite(siteId)) ?? null;
+    },
+    enabled: Boolean(siteId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}
 
-  return {
-    site,
-    ...rest,
-  };
+export function useCatalogSearch(query: string, limit = 50) {
+  const trimmedQuery = query.trim();
+
+  return useQuery<CatalogVariantResult[]>({
+    queryKey: ["catalog-search", trimmedQuery, limit],
+    queryFn: async () => {
+      if (trimmedQuery.length < 2) {
+        return [];
+      }
+
+      return (await api.searchCatalog(trimmedQuery, limit)) ?? [];
+    },
+    enabled: trimmedQuery.length >= 2,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 }

@@ -1,7 +1,12 @@
 import { BrowserView } from "electrobun";
 import { AppRPCSchema } from "../shared/rpc";
-import { getDownloadedBooks } from "../db/queries";
-import { fetchMergedCatalog } from "./utils/catalog-fetcher";
+import {
+  getCatalogSite,
+  getCatalogSites,
+  getCatalogVariantById,
+  searchCatalog,
+} from "../db/catalog-queries";
+import { getDownloadedBooks, upsertBooks } from "../db/queries";
 import { runtime } from "./runtime";
 
 export const rpc = BrowserView.defineRPC<AppRPCSchema>({
@@ -9,20 +14,30 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
   handlers: {
     requests: {
       ping: ({ msg }) => console.log(msg),
-      getStoreCatalog: async () => {
-        try {
-          const catalog = await fetchMergedCatalog();
-          const jsonSize = JSON.stringify(catalog).length;
-          console.log(
-            `[rpc] getStoreCatalog returning ${catalog.sites.length} sites (${(jsonSize / 1024).toFixed(0)} KB)`
-          );
-          return catalog;
-        } catch (err) {
-          console.error("Failed to fetch catalog:", err);
-          return null;
+      getCatalogSites: () => getCatalogSites(),
+      getCatalogSite: ({ siteId }) => getCatalogSite(siteId),
+      searchCatalog: ({ query, limit }) => searchCatalog(query, limit),
+      startDownload: async ({ id, url, filename }) => {
+        const variant = await getCatalogVariantById(id);
+        const downloadUrl = variant?.downloadUrl ?? url;
+        const downloadFilename = variant?.filename ?? filename;
+
+        if (variant) {
+          await upsertBooks([
+            {
+              id: variant.filename,
+              name: variant.id,
+              title: variant.name,
+              summary: variant.siteDescription,
+              category: variant.siteId,
+              sizeBytes: variant.sizeBytes,
+              downloadUrl: variant.downloadUrl,
+            },
+          ]);
         }
+
+        return runtime.startDownload(id, downloadUrl, downloadFilename);
       },
-      startDownload: ({ id, url, filename }) => runtime.startDownload(id, url, filename),
       getLocalLibrary: () => getDownloadedBooks(),
       getActiveDownloads: () => runtime.getActiveDownloads(),
       getConfig: () => runtime.getConfigManager().getConfig(),

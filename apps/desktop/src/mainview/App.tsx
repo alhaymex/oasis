@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import Sidebar from "./components/Sidebar";
 import Downloads from "./screens/Downloads";
 import Library from "./screens/Library";
@@ -12,25 +12,22 @@ import { useDownloadStore } from "./store";
 import View from "./screens/View";
 import { useAppConfig } from "./hooks/useAppConfig";
 import { applyTheme } from "./lib/theme";
-
-const queryClient = new QueryClient();
+import { queryClient } from "./lib/queryClient";
 
 useDownloadStore.getState();
 
 queryClient.prefetchQuery({
-  queryKey: ["store-catalog"],
-  queryFn: async () => {
-    const data = await api.getStoreCatalog();
-    if (!data || !data.sites) throw new Error("Catalog not available");
-    return data;
-  },
+  queryKey: ["catalog-sites"],
+  queryFn: () => api.getCatalogSites(),
 });
 
 queryClient.prefetchQuery({
   queryKey: ["app-config"],
   queryFn: async () => {
     const data = await api.getConfig();
-    if (!data) throw new Error("Config not available");
+    if (!data) {
+      throw new Error("Config not available");
+    }
     return data;
   },
 });
@@ -58,6 +55,7 @@ function AppShell() {
           <Route path="/library" element={<Library />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/browse/:siteId" element={<SiteDetail />} />
+          <Route path="/theme" element={<Navigate to="/settings" replace />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/downloads" element={<Downloads />} />
           <Route path="/view/:id" element={<View />} />

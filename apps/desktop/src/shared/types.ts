@@ -54,6 +54,32 @@ export interface StoreCatalog {
   sites: StoreSite[];
 }
 
+export interface CatalogSiteSummary {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  variantCount: number;
+}
+
+export interface CatalogVariantResult {
+  id: string;
+  siteId: string;
+  siteName: string;
+  siteIcon: string;
+  siteDescription: string;
+  name: string;
+  filename: string;
+  downloadUrl: string;
+  sizeLabel: string;
+  sizeBytes: number | null;
+  isDownloaded: boolean;
+}
+
+export interface CatalogSiteDetail extends CatalogSiteSummary {
+  variants: CatalogVariantResult[];
+}
+
 export interface LibraryBook {
   id: string;
   opdsId: string | null;

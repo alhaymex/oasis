@@ -2,6 +2,7 @@ import { BrowserWindow, Updater } from "electrobun/bun";
 import { rpc } from "./rpc";
 import { runtime } from "./runtime";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
+import { ensureBundledCatalogSeeded } from "./utils/catalog-seed";
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
@@ -49,6 +50,7 @@ async function start() {
   }
 
   await runtime.startServices();
+  await ensureBundledCatalogSeeded();
 
   new BrowserWindow({
     title: "Oasis",
@@ -63,4 +65,7 @@ async function start() {
   });
 }
 
-start().catch(console.error);
+start().catch((error) => {
+  console.error("Failed to start Oasis:", error);
+  process.exit(1);
+});

@@ -11,24 +11,27 @@ export default {
     copy: {
       "dist/index.html": "views/mainview/index.html",
       "dist/assets": "views/mainview/assets",
+      "drizzle": "drizzle",
+      ".generated/catalog/catalog.json": "catalog/catalog.json",
     },
     watchIgnore: ["dist/**"],
     mac: {
       bundleCEF: false,
-      icons: "public/logo.png"
+      icons: "public/logo.png",
     },
     linux: {
       bundleCEF: true,
       defaultRenderer: "cef",
       bundleWGPU: true,
-      icon: "public/logo.png"
+      icon: "public/logo.png",
     },
     win: {
       bundleCEF: false,
-      icon: "public/logo.png"
+      icon: "public/logo.png",
     },
   },
   scripts: {
-    postBuild: "scripts/fix-icon.ts"
-  }
+    preBuild: "scripts/stage-catalog.ts",
+    postBuild: "scripts/fix-icon.ts",
+  },
 } satisfies ElectrobunConfig;

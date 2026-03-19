@@ -186,7 +186,10 @@ export class LibraryMigrationManager {
       await this.deps.startServices();
 
       await rm(currentPath, { recursive: true, force: true }).catch((error) => {
-        console.warn("[LibraryMigrationManager] Failed to remove the old library directory:", error);
+        console.warn(
+          "[LibraryMigrationManager] Failed to remove the old library directory:",
+          error
+        );
       });
 
       this.updateState({

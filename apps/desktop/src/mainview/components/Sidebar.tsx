@@ -5,7 +5,7 @@ import {
   Home,
   NotepadText,
   Settings,
-  type LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
