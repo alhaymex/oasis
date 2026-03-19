@@ -44,6 +44,7 @@
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/alhaymex/oasis.git
    cd oasis
@@ -57,6 +58,7 @@
 ### Running the App
 
 To start the development server:
+
 ```bash
 bun run dev:hmr
 ```

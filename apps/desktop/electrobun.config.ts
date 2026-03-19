@@ -27,6 +27,8 @@ export default {
       bundleCEF: false,
       icon: "public/logo.png"
     },
-
   },
+  scripts: {
+    postBuild: "scripts/fix-icon.ts"
+  }
 } satisfies ElectrobunConfig;
