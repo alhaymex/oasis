@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync } from "fs";
-import { dirname, join, resolve } from "path";
+import { dirname, isAbsolute, join, normalize, parse, relative, resolve } from "path";
 import { fileURLToPath } from "url";
 import os from "os";
 
@@ -31,6 +31,10 @@ export function getConfigDir(): string {
   }
 }
 
+export function getDatabasePath(): string {
+  return join(getConfigDir(), "oasis.sqlite");
+}
+
 const packagedAppRoot = resolve(dirname(process.execPath), "..", "Resources", "app");
 const sourceProjectRoot = findProjectRoot(__dirname);
 const sourceAppRoot = existsSync(join(sourceProjectRoot, "apps", "desktop", "package.json"))
@@ -52,6 +56,35 @@ export function getBinPath(binaryName: string): string {
 
 export function getLibraryPath(override?: string): string {
   return override ?? DEFAULT_LIBRARY_DIR;
+}
+
+export function normalizeLibraryPath(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const resolved = normalize(isAbsolute(trimmed) ? trimmed : resolve(trimmed));
+  const root = parse(resolved).root;
+  let normalized = resolved === root ? resolved : resolved.replace(/[\\\/]+$/, "");
+
+  if (process.platform === "win32") {
+    normalized = normalized.replace(/^[a-z]:/, (match) => match.toUpperCase());
+  }
+
+  return normalized;
+}
+
+export function isSamePath(left: string, right: string): boolean {
+  return normalizeLibraryPath(left) === normalizeLibraryPath(right);
+}
+
+export function isNestedPath(parent: string, candidate: string): boolean {
+  const normalizedParent = normalizeLibraryPath(parent);
+  const normalizedCandidate = normalizeLibraryPath(candidate);
+  const rel = relative(normalizedParent, normalizedCandidate);
+
+  return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
 }
 
 export function ensureDir(path: string): void {

@@ -1,22 +1,19 @@
 import { join } from "path";
 import { DownloadProgressInfo } from "../../shared/types";
-import { getLibraryPath } from "./paths";
 import { ZimManager } from "./zim-manager";
 import { rename } from "fs/promises";
 import { updateBookDownloadStatus } from "../../db/queries";
 
 export class ZimDownloader {
-  private libraryPath: string;
   private zimManager: ZimManager;
   private activeDownloads: Map<string, DownloadProgressInfo> = new Map();
   private progressCallback?: (progress: DownloadProgressInfo) => void;
 
   constructor(zimManager: ZimManager) {
-    this.libraryPath = getLibraryPath();
     this.zimManager = zimManager;
   }
 
-  public setProgressCallback(cb: (progress: DownloadProgressInfo) => void) {
+  public setProgressCallback(cb?: (progress: DownloadProgressInfo) => void) {
     this.progressCallback = cb;
   }
 
@@ -44,8 +41,9 @@ export class ZimDownloader {
     this.activeDownloads.set(id, info);
     this.notifyProgress(info);
 
-    const tmpFilePath = join(this.libraryPath, `${filename}.tmp`);
-    const finalPath = join(this.libraryPath, filename);
+    const libraryPath = this.zimManager.getLibraryPath();
+    const tmpFilePath = join(libraryPath, `${filename}.tmp`);
+    const finalPath = join(libraryPath, filename);
 
     try {
       const response = await fetch(url);
@@ -108,7 +106,7 @@ export class ZimDownloader {
 
       // Update DB status
       try {
-        await updateBookDownloadStatus(filename, true, finalPath);
+        await updateBookDownloadStatus(filename, true, finalPath, downloaded);
       } catch (err) {
         console.error(`[ZimDownloader] Failed to update DB status for ${filename}:`, err);
       }

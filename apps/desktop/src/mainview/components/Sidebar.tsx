@@ -4,7 +4,6 @@ import {
   Download,
   Home,
   NotepadText,
-  Palette,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -43,12 +42,6 @@ const bottomItems = [
     icon: Download,
     tooltip: "Downloads",
     url: "/downloads",
-  },
-  {
-    title: "Theme",
-    icon: Palette,
-    tooltip: "Change Theme",
-    url: "/theme",
   },
   {
     title: "Settings",

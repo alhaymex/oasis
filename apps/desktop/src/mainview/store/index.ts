@@ -1,4 +1,4 @@
-import { DownloadProgressInfo } from "../../shared/types";
+import type { DownloadProgressInfo, LibraryMigrationState } from "../../shared/types";
 import { create } from "zustand";
 import { api } from "../lib/rpcClient";
 
@@ -31,8 +31,33 @@ export const useDownloadStore = create<DownloadStore>((set) => ({
     }),
 }));
 
+const defaultMigrationState: LibraryMigrationState = {
+  status: "idle",
+  stage: "idle",
+  currentPath: "",
+  message: "Ready",
+};
+
+interface LibraryMigrationStore {
+  state: LibraryMigrationState;
+  setState: (state: LibraryMigrationState) => void;
+  resetState: () => void;
+}
+
+export const useLibraryMigrationStore = create<LibraryMigrationStore>((set) => ({
+  state: defaultMigrationState,
+  setState: (state) => set({ state }),
+  resetState: () => set({ state: defaultMigrationState }),
+}));
+
 api.getActiveDownloads()?.then((downloads) => {
   if (downloads) {
     useDownloadStore.getState().setAllDownloads(downloads);
+  }
+});
+
+api.getLibraryMigrationState()?.then((state) => {
+  if (state) {
+    useLibraryMigrationStore.getState().setState(state);
   }
 });

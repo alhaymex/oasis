@@ -1,7 +1,7 @@
 import { Electroview } from "electrobun/view";
 import type { AppRPCSchema } from "@/shared/rpc";
 import type { DownloadProgressInfo } from "@/shared/types";
-import { useDownloadStore } from "../store";
+import { useDownloadStore, useLibraryMigrationStore } from "../store";
 import { queryClient } from "./queryClient";
 
 type ProgressListener = (progress: DownloadProgressInfo) => void;
@@ -22,6 +22,7 @@ const rpc = Electroview.defineRPC<AppRPCSchema>({
     messages: {
       onDownloadProgress: (progress) => {
         useDownloadStore.getState().updateProgress(progress);
+        progressListeners.forEach((listener) => listener(progress));
 
         if (progress.status === "completed") {
           queryClient.invalidateQueries({ queryKey: ["local-library"] });
@@ -34,6 +35,9 @@ const rpc = Electroview.defineRPC<AppRPCSchema>({
             useDownloadStore.getState().removeDownload(progress.id);
           }, 3000);
         }
+      },
+      onLibraryMigrationProgress: (state) => {
+        useLibraryMigrationStore.getState().setState(state);
       },
     },
   },

@@ -83,6 +83,16 @@ export class ZimManager {
     }
   }
 
+  async rebuildLibraryXmlFromDisk(): Promise<void> {
+    const books = this.getZimFiles().map((zimFile) => ({
+      id: this.filenameToId(zimFile),
+      path: join(this.libraryPath, zimFile),
+    }));
+
+    await this.writeLibraryXml(books);
+    console.log(`[ZimManager] Rebuilt library.xml from ${books.length} ZIM files`);
+  }
+
   async addBookToXml(zimFilename: string): Promise<void> {
     const books = this.readBooks();
     const id = this.filenameToId(zimFilename);

@@ -10,4 +10,9 @@ export const api = {
     electroview.rpc?.request.startDownload({ id, url, filename }),
   getLocalLibrary: () => electroview.rpc?.request.getLocalLibrary(),
   getActiveDownloads: () => electroview.rpc?.request.getActiveDownloads(),
+  getConfig: () => electroview.rpc?.request.getConfig(),
+  switchTheme: (themeId: string) => electroview.rpc?.request.switchTheme({ themeId }),
+  startLibraryMigration: (nextLibraryPath: string) =>
+    electroview.rpc?.request.startLibraryMigration({ nextLibraryPath }),
+  getLibraryMigrationState: () => electroview.rpc?.request.getLibraryMigrationState(),
 };
