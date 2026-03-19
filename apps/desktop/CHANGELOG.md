@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/alhaymex/oasis/compare/oasis-v1.5.0...oasis-v1.6.0) (2026-03-19)
+
+
+### Features
+
+* Add new Electrobun desktop application with React and Drizzle ORM, and integrate ESLint as a dev dependency. ([#18](https://github.com/alhaymex/oasis/issues/18)) ([b8f7a87](https://github.com/alhaymex/oasis/commit/b8f7a877e75020afde908263ec76a377e2c9d053))
+
 ## [1.5.0](https://github.com/alhaymex/oasis/compare/oasis-v1.4.0...oasis-v1.5.0) (2026-03-18)
 
 
