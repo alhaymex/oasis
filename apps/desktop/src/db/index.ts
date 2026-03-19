@@ -4,6 +4,7 @@ import { join, dirname } from "path";
 import { getLibraryPath, ensureDir } from "../bun/utils/paths";
 
 let internalDb: BunSQLiteDatabase<Record<string, never>> | null = null;
+let internalSqlite: Database | null = null;
 
 export const db = new Proxy({} as BunSQLiteDatabase<Record<string, never>>, {
   get(_target, prop) {
@@ -23,6 +24,15 @@ export function initDb(dbPath: string) {
 
   ensureDir(dirname(dbPath));
   const sqlite = new Database(dbPath);
+  internalSqlite = sqlite;
   internalDb = drizzle(sqlite);
   console.log(`[db] Database initialized at: ${dbPath}`);
+}
+
+export function getSqliteClient(): Database {
+  if (!internalSqlite) {
+    initDb(join(getLibraryPath(), "oasis.sqlite"));
+  }
+
+  return internalSqlite as Database;
 }

@@ -2,3 +2,4 @@ build
 library
 artifacts
 bin
+.generated
