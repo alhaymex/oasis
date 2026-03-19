@@ -17,7 +17,8 @@
     "format": "prettier --write --ignore-path ../../.prettierignore .",
     "lint": "bunx eslint .",
     "typecheck": "tsc --noEmit",
-    "postinstall": "bun run src/bun/utils/engine-manager"
+    "postinstall": "bun run src/bun/utils/engine-manager",
+    "test": "node --import /usr/local/lib/node_modules/tsx/dist/esm/index.mjs --test scripts/__tests__/fix-icon.test.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",

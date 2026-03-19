@@ -1,12 +1,26 @@
-import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { spawnSync as _spawnSync } from "node:child_process";
+import { existsSync as _existsSync, readdirSync as _readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const projectRoot = join(import.meta.dirname, "..");
 const buildFolder = join(projectRoot, "build");
 
-async function fixIcon() {
-  if (!existsSync(buildFolder)) {
+export interface FixIconDeps {
+  existsSync?: (path: string) => boolean;
+  readdirSync?: (path: string) => string[];
+  spawnSync?: (cmd: string, args: string[], opts: { stdio: string }) => { status: number | null };
+  buildFolder?: string;
+  projectRoot?: string;
+}
+
+export async function fixIcon(deps: FixIconDeps = {}) {
+  const existsSync = deps.existsSync ?? _existsSync;
+  const readdirSync = deps.readdirSync ?? _readdirSync;
+  const spawnSync = deps.spawnSync ?? _spawnSync;
+  const resolvedBuildFolder = deps.buildFolder ?? buildFolder;
+  const resolvedProjectRoot = deps.projectRoot ?? projectRoot;
+
+  if (!existsSync(resolvedBuildFolder)) {
     console.log("Build folder does not exist yet.");
     return;
   }
@@ -14,7 +28,7 @@ async function fixIcon() {
   const targets = ["dev-win-x64", "stable-win-x64"];
 
   for (const target of targets) {
-    const targetPath = join(buildFolder, target);
+    const targetPath = join(resolvedBuildFolder, target);
     if (!existsSync(targetPath)) continue;
 
     console.log(`Checking target: ${target}`);
@@ -40,7 +54,7 @@ async function fixIcon() {
 
           // Run rcedit
           // Use local rcedit from node_modules
-          const rceditPath = join(projectRoot, "node_modules", "rcedit", "bin", "rcedit-x64.exe");
+          const rceditPath = join(resolvedProjectRoot, "node_modules", "rcedit", "bin", "rcedit-x64.exe");
 
           if (!existsSync(rceditPath)) {
             console.error(`rcedit not found at: ${rceditPath}`);
@@ -62,4 +76,6 @@ async function fixIcon() {
   }
 }
 
-fixIcon().catch(console.error);
+if (import.meta.main) {
+  fixIcon().catch(console.error);
+}
