@@ -15,14 +15,20 @@ export default {
     watchIgnore: ["dist/**"],
     mac: {
       bundleCEF: false,
+      icons: "public/logo.png"
     },
     linux: {
       bundleCEF: true,
       defaultRenderer: "cef",
       bundleWGPU: true,
+      icon: "public/logo.png"
     },
     win: {
       bundleCEF: false,
+      icon: "public/logo.png"
     },
   },
+  scripts: {
+    postBuild: "scripts/fix-icon.ts"
+  }
 } satisfies ElectrobunConfig;
