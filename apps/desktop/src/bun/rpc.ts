@@ -6,7 +6,17 @@ import {
   getCatalogVariantById,
   searchCatalog,
 } from "../db/catalog-queries";
-import { getDownloadedBooks, upsertBooks } from "../db/queries";
+import {
+  addFavorite,
+  createNote,
+  deleteNote,
+  getFavoriteBooks,
+  getNotes,
+  removeFavorite,
+  getDownloadedBooks,
+  upsertBooks,
+  updateNote,
+} from "../db/queries";
 import { runtime } from "./runtime";
 
 export const rpc = BrowserView.defineRPC<AppRPCSchema>({
@@ -39,6 +49,43 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
         return runtime.startDownload(id, downloadUrl, downloadFilename);
       },
       getLocalLibrary: () => getDownloadedBooks(),
+      getFavorites: () => getFavoriteBooks(),
+      addFavorite: async ({ bookId }) => {
+        await addFavorite(bookId);
+        return { success: true as const };
+      },
+      removeFavorite: async ({ bookId }) => {
+        await removeFavorite(bookId);
+        return { success: true as const };
+      },
+      getNotes: ({ bookId }) => getNotes(bookId),
+      createNote: async ({ bookId, sourceUrl, sourceTitle, selectedText, body }) => {
+        const note = await createNote({
+          id: crypto.randomUUID(),
+          bookId: bookId ?? null,
+          sourceUrl: sourceUrl ?? null,
+          sourceTitle: sourceTitle ?? null,
+          selectedText: selectedText ?? null,
+          body,
+        });
+
+        if (!note) {
+          throw new Error("Failed to create note.");
+        }
+
+        return note;
+      },
+      updateNote: ({ id, sourceUrl, sourceTitle, selectedText, body }) =>
+        updateNote(id, {
+          sourceUrl: sourceUrl ?? null,
+          sourceTitle: sourceTitle ?? null,
+          selectedText: selectedText ?? null,
+          body,
+        }),
+      deleteNote: async ({ id }) => {
+        await deleteNote(id);
+        return { success: true as const };
+      },
       getActiveDownloads: () => runtime.getActiveDownloads(),
       getConfig: () => runtime.getConfigManager().getConfig(),
       switchTheme: async ({ themeId }) => {

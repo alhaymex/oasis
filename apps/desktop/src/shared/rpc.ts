@@ -4,8 +4,10 @@ import type {
   CatalogSiteSummary,
   CatalogVariantResult,
   DownloadProgressInfo,
+  FavoriteBook,
   LibraryBook,
   LibraryMigrationState,
+  NoteRecord,
 } from "./types";
 import type { AppConfig } from "../schema/config";
 
@@ -35,6 +37,46 @@ export type AppRPCSchema = {
       getLocalLibrary: {
         params: void;
         response: LibraryBook[];
+      };
+      getFavorites: {
+        params: void;
+        response: FavoriteBook[];
+      };
+      addFavorite: {
+        params: { bookId: string };
+        response: { success: true };
+      };
+      removeFavorite: {
+        params: { bookId: string };
+        response: { success: true };
+      };
+      getNotes: {
+        params: { bookId?: string };
+        response: NoteRecord[];
+      };
+      createNote: {
+        params: {
+          bookId?: string | null;
+          sourceUrl?: string | null;
+          sourceTitle?: string | null;
+          selectedText?: string | null;
+          body: string;
+        };
+        response: NoteRecord;
+      };
+      updateNote: {
+        params: {
+          id: string;
+          sourceUrl?: string | null;
+          sourceTitle?: string | null;
+          selectedText?: string | null;
+          body: string;
+        };
+        response: NoteRecord | null;
+      };
+      deleteNote: {
+        params: { id: string };
+        response: { success: true };
       };
       getActiveDownloads: {
         params: void;
