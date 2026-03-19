@@ -37,7 +37,7 @@ const rpc = Electroview.defineRPC<AppRPCSchema>({
         }
       },
       onLibraryMigrationProgress: (state) => {
-        useLibraryMigrationStore.getState().setState(state);
+        useLibraryMigrationStore.getState().setState(state, Date.now());
       },
     },
   },
