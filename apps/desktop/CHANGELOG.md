@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/alhaymex/oasis/compare/oasis-v1.6.0...oasis-v1.7.0) (2026-03-19)
+
+
+### Features
+
+* adding the local catalog ([#20](https://github.com/alhaymex/oasis/issues/20)) ([05bca9e](https://github.com/alhaymex/oasis/commit/05bca9edc628f45d813760a20a2650b8afb185f6))
+
 ## [1.6.0](https://github.com/alhaymex/oasis/compare/oasis-v1.5.0...oasis-v1.6.0) (2026-03-19)
 
 
