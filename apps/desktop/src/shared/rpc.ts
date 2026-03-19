@@ -30,6 +30,10 @@ export type AppRPCSchema = {
         params: void;
         response: AppConfig;
       };
+      switchTheme: {
+        params: { themeId: string };
+        response: AppConfig;
+      };
     };
     messages: {};
   }>;

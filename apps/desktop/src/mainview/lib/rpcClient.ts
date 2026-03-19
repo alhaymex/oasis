@@ -8,4 +8,5 @@ export const api = {
   getLocalLibrary: () => electroview.rpc?.request.getLocalLibrary(),
   getActiveDownloads: () => electroview.rpc?.request.getActiveDownloads(),
   getConfig: () => electroview.rpc?.request.getConfig(),
+  switchTheme: (themeId: string) => electroview.rpc?.request.switchTheme({ themeId }),
 };

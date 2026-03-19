@@ -1,36 +1,60 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Folder, Palette, Sparkles } from "lucide-react";
 import type { AppConfig } from "@/schema/config";
 import { api } from "../lib/rpcClient";
+import { useAppConfig } from "../hooks/useAppConfig";
 import appPackage from "../../../package.json";
 
 function Settings() {
   const [libraryPath, setLibraryPath] = useState("");
-  const [activeThemeId, setActiveThemeId] = useState("");
   const latestVersion = appPackage.version;
+  const queryClient = useQueryClient();
 
-  const {
-    data: config,
-    isLoading,
-    error,
-  } = useQuery<AppConfig>({
-    queryKey: ["app-config"],
-    queryFn: async () => {
-      const res = await api.getConfig();
-      if (!res) {
-        throw new Error("Config not available");
-      }
-      return res;
-    },
-  });
+  const { data: config, isLoading, error } = useAppConfig();
 
   useEffect(() => {
     if (!config) return;
     setLibraryPath(config.libraryPath);
-    setActiveThemeId(config.theme.active);
   }, [config]);
 
+  const switchThemeMutation = useMutation({
+    mutationFn: async (themeId: string) => {
+      const res = await api.switchTheme(themeId);
+      if (!res) {
+        throw new Error("Theme update failed");
+      }
+      return res;
+    },
+    onMutate: async (themeId) => {
+      await queryClient.cancelQueries({ queryKey: ["app-config"] });
+
+      const previousConfig = queryClient.getQueryData<AppConfig>(["app-config"]);
+      if (!previousConfig) {
+        return { previousConfig };
+      }
+
+      queryClient.setQueryData<AppConfig>(["app-config"], {
+        ...previousConfig,
+        theme: {
+          ...previousConfig.theme,
+          active: themeId,
+        },
+      });
+
+      return { previousConfig };
+    },
+    onError: (_error, _themeId, context) => {
+      if (context?.previousConfig) {
+        queryClient.setQueryData(["app-config"], context.previousConfig);
+      }
+    },
+    onSuccess: (nextConfig) => {
+      queryClient.setQueryData(["app-config"], nextConfig);
+    },
+  });
+
+  const activeThemeId = config?.theme.active ?? "";
   const activeTheme = config?.theme.themes.find((theme) => theme.id === activeThemeId);
   const hasUpdate = latestVersion !== appPackage.version;
 
@@ -109,8 +133,8 @@ function Settings() {
             <label className="block text-sm font-medium text-[var(--color-accent)]">Theme</label>
             <select
               value={activeThemeId}
-              onChange={(event) => setActiveThemeId(event.target.value)}
-              disabled={isLoading || !config}
+              onChange={(event) => switchThemeMutation.mutate(event.target.value)}
+              disabled={isLoading || !config || switchThemeMutation.isPending}
               className="mt-3 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all disabled:cursor-not-allowed disabled:opacity-70"
               style={{
                 backgroundColor: "var(--color-bg)",
@@ -161,6 +185,10 @@ function Settings() {
                   ))}
                 </div>
               </div>
+            )}
+
+            {switchThemeMutation.isError && (
+              <p className="mt-3 text-sm text-red-400">Failed to update theme.</p>
             )}
           </section>
 
