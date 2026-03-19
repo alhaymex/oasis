@@ -20,6 +20,10 @@ const migrationStageLabels = {
   error: "Error",
 } as const;
 
+function isTerminalMigrationStatus(status: "idle" | "running" | "completed" | "error") {
+  return status === "completed" || status === "error";
+}
+
 function formatBytes(bytes?: number) {
   if (!bytes || bytes <= 0) {
     return "0 B";
@@ -64,7 +68,7 @@ function Settings() {
         return nextLibraryPath;
       }
 
-      if (migrationState.status === "completed") {
+      if (isTerminalMigrationStatus(migrationState.status)) {
         return nextLibraryPath;
       }
 
@@ -132,16 +136,19 @@ function Settings() {
   }, [migrationState.status, migrationState.currentPath, queryClient]);
 
   useEffect(() => {
-    if (migrationState.status !== "completed") {
+    if (!isTerminalMigrationStatus(migrationState.status)) {
       return;
     }
 
     const timeout = setTimeout(() => {
       resetMigrationState();
+      if (migrationState.status === "error") {
+        startLibraryMigrationMutation.reset();
+      }
     }, 3000);
 
     return () => clearTimeout(timeout);
-  }, [migrationState.status, resetMigrationState]);
+  }, [migrationState.status, resetMigrationState, startLibraryMigrationMutation]);
 
   const activeThemeId = config?.theme.active ?? "";
   const activeTheme = config?.theme.themes.find((theme) => theme.id === activeThemeId);

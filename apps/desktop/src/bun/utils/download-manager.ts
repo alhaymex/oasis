@@ -74,7 +74,7 @@ export class ZimDownloader {
         if (value) {
           fileWriter.write(value);
           downloaded += value.length;
-          bytesSinceLastReport = value.length;
+          bytesSinceLastReport += value.length;
 
           const now = performance.now();
           const timeSinceLastReport = now - lastReportTime;
@@ -83,7 +83,7 @@ export class ZimDownloader {
           if (timeSinceLastReport > 500) {
             info.downloadedBytes = downloaded;
             info.progress = contentLength > 0 ? (downloaded / contentLength) * 100 : 0;
-            info.bytesPerSec = (bytesSinceLastReport / timeSinceLastReport) * 100;
+            info.bytesPerSec = (bytesSinceLastReport / timeSinceLastReport) * 1000;
 
             this.notifyProgress(info);
             lastReportTime = now;

@@ -40,14 +40,26 @@ const defaultMigrationState: LibraryMigrationState = {
 
 interface LibraryMigrationStore {
   state: LibraryMigrationState;
-  setState: (state: LibraryMigrationState) => void;
+  lastUpdatedAt: number;
+  setState: (state: LibraryMigrationState, sourceTimestamp?: number) => void;
   resetState: () => void;
 }
 
 export const useLibraryMigrationStore = create<LibraryMigrationStore>((set) => ({
   state: defaultMigrationState,
-  setState: (state) => set({ state }),
-  resetState: () => set({ state: defaultMigrationState }),
+  lastUpdatedAt: 0,
+  setState: (state, sourceTimestamp = Date.now()) =>
+    set((current) => {
+      if (sourceTimestamp < current.lastUpdatedAt) {
+        return current;
+      }
+
+      return {
+        state,
+        lastUpdatedAt: sourceTimestamp,
+      };
+    }),
+  resetState: () => set({ state: defaultMigrationState, lastUpdatedAt: Date.now() }),
 }));
 
 api.getActiveDownloads()?.then((downloads) => {
@@ -56,8 +68,10 @@ api.getActiveDownloads()?.then((downloads) => {
   }
 });
 
+const migrationHydrationStartedAt = Date.now();
+
 api.getLibraryMigrationState()?.then((state) => {
   if (state) {
-    useLibraryMigrationStore.getState().setState(state);
+    useLibraryMigrationStore.getState().setState(state, migrationHydrationStartedAt);
   }
 });
