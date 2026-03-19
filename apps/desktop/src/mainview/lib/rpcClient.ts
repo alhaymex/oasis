@@ -31,6 +31,11 @@ export const api = {
   getActiveDownloads: () => electroview.rpc?.request.getActiveDownloads(),
   getConfig: () => electroview.rpc?.request.getConfig(),
   switchTheme: (themeId: string) => electroview.rpc?.request.switchTheme({ themeId }),
+  setAutoUpdate: (enabled: boolean) => electroview.rpc?.request.setAutoUpdate({ enabled }),
+  getUpdateState: () => electroview.rpc?.request.getUpdateState(),
+  checkForUpdates: (autoDownload?: boolean) =>
+    electroview.rpc?.request.checkForUpdates({ autoDownload }),
+  applyUpdate: () => electroview.rpc?.request.applyUpdate(),
   startLibraryMigration: (nextLibraryPath: string) =>
     electroview.rpc?.request.startLibraryMigration({ nextLibraryPath }),
   getLibraryMigrationState: () => electroview.rpc?.request.getLibraryMigrationState(),

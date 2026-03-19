@@ -14,12 +14,12 @@ interface EngineConfig {
 
 const CONFIG: Record<string, EngineConfig> = {
   "win32-x64": {
-    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-win.exe",
+    url: "https://github.com/alhaymex/oasis/releases/download/oasis-v1.0.0/kiwix-serve-win-x64.exe",
     extractPath: "kiwix-serve.exe",
     finalName: "kiwix-serve-win.exe",
   },
   "linux-x64": {
-    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-linux-x64",
+    url: "https://github.com/alhaymex/oasis/releases/download/oasis-v1.0.0/kiwix-serve-linux-x64",
     extractPath: "kiwix-serve-linux",
     finalName: "kiwix-serve-linux",
   },
@@ -34,7 +34,7 @@ const CONFIG: Record<string, EngineConfig> = {
     finalName: "kiwix-serve-darwin",
   },
   "darwin-arm64": {
-    url: "https://gnibgle18wv7h7vq.public.blob.vercel-storage.com/kiwix-serve-darwin-arm64",
+    url: "https://github.com/alhaymex/oasis/releases/download/oasis-v1.0.0/kiwix-serve-macos-arm64",
     extractPath: "kiwix-serve-darwin",
     finalName: "kiwix-serve-darwin",
   },

@@ -63,6 +63,8 @@ async function start() {
       y: 200,
     },
   });
+
+  void runtime.getUpdateManager().runAutoUpdateOnLaunch();
 }
 
 start().catch((error) => {

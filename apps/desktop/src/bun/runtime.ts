@@ -8,12 +8,14 @@ import { ConfigManager } from "./utils/config-manager";
 import { ZimDownloader } from "./utils/download-manager";
 import { LibraryMigrationManager } from "./utils/library-migration-manager";
 import { getDatabasePath, getConfigDir, ensureDir, pathExists } from "./utils/paths";
+import { UpdateManager } from "./utils/update-manager";
 import { ZimManager } from "./utils/zim-manager";
 
 const LEGACY_DB_FILENAME = "oasis.sqlite";
 
 export class AppRuntime {
   private readonly configManager = new ConfigManager();
+  private readonly updateManager = new UpdateManager(this.configManager);
   private readonly kiwixServer = new KiwixServer();
   private readonly migrationManager = new LibraryMigrationManager({
     configManager: this.configManager,
@@ -34,6 +36,7 @@ export class AppRuntime {
 
   async startServices() {
     await this.ensureConfigLoaded();
+    await this.updateManager.initialize();
 
     const config = this.configManager.getConfig();
     await this.ensureDatabaseLocation(config.libraryPath);
@@ -71,6 +74,10 @@ export class AppRuntime {
 
   getConfigManager() {
     return this.configManager;
+  }
+
+  getUpdateManager() {
+    return this.updateManager;
   }
 
   getMigrationManager() {

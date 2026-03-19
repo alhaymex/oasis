@@ -92,6 +92,18 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
         await runtime.getConfigManager().switchTheme(themeId);
         return runtime.getConfigManager().getConfig();
       },
+      setAutoUpdate: async ({ enabled }) => {
+        await runtime.getConfigManager().updateConfig({ autoUpdate: enabled });
+        runtime.getUpdateManager().syncAutoUpdateSetting();
+        return runtime.getConfigManager().getConfig();
+      },
+      getUpdateState: () => runtime.getUpdateManager().getState(),
+      checkForUpdates: ({ autoDownload }) =>
+        runtime.getUpdateManager().checkForUpdates({ autoDownload }),
+      applyUpdate: async () => {
+        await runtime.getUpdateManager().applyUpdate();
+        return { accepted: true as const };
+      },
       startLibraryMigration: ({ nextLibraryPath }) =>
         runtime.getMigrationManager().startLibraryMigration(nextLibraryPath),
       getLibraryMigrationState: () => runtime.getMigrationManager().getState(),
