@@ -15,7 +15,7 @@
     "db:migrate": "bun src/db/migrate.ts",
     "db:studio": "bunx drizzle-kit studio",
     "format": "prettier --write --ignore-path ../../.prettierignore .",
-    "lint": "bunx eslint .",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "postinstall": "bun run src/bun/utils/engine-manager"
   },
