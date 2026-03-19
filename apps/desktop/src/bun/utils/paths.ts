@@ -41,7 +41,9 @@ export const IS_PACKAGED_APP = sourceAppRoot === null && existsSync(join(package
 export const PROJECT_ROOT = sourceProjectRoot;
 export const APP_ROOT = sourceAppRoot ?? packagedAppRoot;
 export const BIN_DIR = IS_PACKAGED_APP ? join(getConfigDir(), "bin") : join(APP_ROOT, "bin");
-export const TMP_DIR = IS_PACKAGED_APP ? join(getConfigDir(), ".tmp-engine") : join(APP_ROOT, ".tmp-engine");
+export const TMP_DIR = IS_PACKAGED_APP
+  ? join(getConfigDir(), ".tmp-engine")
+  : join(APP_ROOT, ".tmp-engine");
 export const DEFAULT_LIBRARY_DIR = join(os.homedir(), "oasis-library");
 
 export function getBinPath(binaryName: string): string {
