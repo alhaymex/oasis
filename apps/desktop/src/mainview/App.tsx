@@ -3,7 +3,9 @@ import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import Sidebar from "./components/Sidebar";
 import Downloads from "./screens/Downloads";
+import Favorites from "./screens/Favorites";
 import Library from "./screens/Library";
+import Notes from "./screens/Notes";
 import Settings from "./screens/Settings";
 import Browse from "./screens/Browse";
 import SiteDetail from "./screens/SiteDetail";
@@ -55,6 +57,9 @@ function AppShell() {
           <Route path="/library" element={<Library />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/browse/:siteId" element={<SiteDetail />} />
+          <Route path="/favorite" element={<Navigate to="/favorites" replace />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/notes" element={<Notes />} />
           <Route path="/theme" element={<Navigate to="/settings" replace />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/downloads" element={<Downloads />} />

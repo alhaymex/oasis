@@ -5,3 +5,10 @@ export function formatBytes(bytes: number): string {
   const val = bytes / Math.pow(1024, i);
   return `${val.toFixed(1)} ${units[i]}`;
 }
+
+export function getZimId(filename: string): string {
+  return filename
+    .replace(/\.zim$/, "")
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+}

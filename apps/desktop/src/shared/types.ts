@@ -95,3 +95,18 @@ export interface LibraryBook {
   isDownloaded: boolean;
   updatedAt: Date | null;
 }
+
+export interface FavoriteBook extends LibraryBook {
+  favoritedAt: Date | null;
+}
+
+export interface NoteRecord {
+  id: string;
+  bookId: string | null;
+  sourceUrl: string | null;
+  sourceTitle: string | null;
+  selectedText: string | null;
+  body: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+}

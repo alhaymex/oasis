@@ -56,3 +56,32 @@ export const appMeta = sqliteTable("app_meta", {
   value: text("value").notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
 });
+
+export const favorites = sqliteTable(
+  "favorites",
+  {
+    bookId: text("book_id").primaryKey(),
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+  },
+  (table) => ({
+    createdAtIdx: index("favorites_created_at_idx").on(table.createdAt),
+  })
+);
+
+export const notes = sqliteTable(
+  "notes",
+  {
+    id: text("id").primaryKey(),
+    bookId: text("book_id"),
+    sourceUrl: text("source_url"),
+    sourceTitle: text("source_title"),
+    selectedText: text("selected_text"),
+    body: text("body").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+  },
+  (table) => ({
+    bookIdIdx: index("notes_book_id_idx").on(table.bookId),
+    updatedAtIdx: index("notes_updated_at_idx").on(table.updatedAt),
+  })
+);
