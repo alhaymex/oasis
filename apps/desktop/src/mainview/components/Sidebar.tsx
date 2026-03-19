@@ -4,9 +4,8 @@ import {
   Download,
   Home,
   NotepadText,
-  Palette,
   Settings,
-  type LucideIcon,
+  type LucideIcon
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -43,12 +42,6 @@ const bottomItems = [
     icon: Download,
     tooltip: "Downloads",
     url: "/downloads",
-  },
-  {
-    title: "Theme",
-    icon: Palette,
-    tooltip: "Change Theme",
-    url: "/theme",
   },
   {
     title: "Settings",

@@ -1,5 +1,10 @@
 import type { RPCSchema } from "electrobun";
-import type { StoreCatalog, DownloadProgressInfo, LibraryBook } from "./types";
+import type {
+  StoreCatalog,
+  DownloadProgressInfo,
+  LibraryBook,
+  LibraryMigrationState,
+} from "./types";
 import type { AppConfig } from "../schema/config";
 
 export type AppRPCSchema = {
@@ -34,6 +39,14 @@ export type AppRPCSchema = {
         params: { themeId: string };
         response: AppConfig;
       };
+      startLibraryMigration: {
+        params: { nextLibraryPath: string };
+        response: { accepted: true };
+      };
+      getLibraryMigrationState: {
+        params: void;
+        response: LibraryMigrationState;
+      };
     };
     messages: {};
   }>;
@@ -43,6 +56,7 @@ export type AppRPCSchema = {
     requests: {};
     messages: {
       onDownloadProgress: DownloadProgressInfo;
+      onLibraryMigrationProgress: LibraryMigrationState;
     };
   }>;
 };

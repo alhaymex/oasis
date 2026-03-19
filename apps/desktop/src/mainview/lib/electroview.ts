@@ -1,7 +1,7 @@
 import { Electroview } from "electrobun/view";
 import type { AppRPCSchema } from "@/shared/rpc";
 import type { DownloadProgressInfo } from "@/shared/types";
-import { useDownloadStore } from "../store";
+import { useDownloadStore, useLibraryMigrationStore } from "../store";
 
 type ProgressListener = (progress: DownloadProgressInfo) => void;
 const progressListeners = new Set<ProgressListener>();
@@ -27,6 +27,9 @@ const rpc = Electroview.defineRPC<AppRPCSchema>({
             useDownloadStore.getState().removeDownload(progress.id);
           }, 3000);
         }
+      },
+      onLibraryMigrationProgress: (state) => {
+        useLibraryMigrationStore.getState().setState(state);
       },
     },
   },

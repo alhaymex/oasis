@@ -1,22 +1,80 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Folder, Palette, Sparkles } from "lucide-react";
 import type { AppConfig } from "@/schema/config";
 import { api } from "../lib/rpcClient";
 import { useAppConfig } from "../hooks/useAppConfig";
+import { useDownloadStore, useLibraryMigrationStore } from "../store";
 import appPackage from "../../../package.json";
+
+const migrationStageLabels = {
+  idle: "Idle",
+  validating: "Validating",
+  stopping_services: "Stopping services",
+  moving_files: "Moving files",
+  updating_database: "Updating database",
+  rewriting_library_xml: "Rebuilding library.xml",
+  writing_config: "Saving config",
+  restarting_services: "Restarting services",
+  completed: "Completed",
+  error: "Error",
+} as const;
+
+function formatBytes(bytes?: number) {
+  if (!bytes || bytes <= 0) {
+    return "0 B";
+  }
+
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let unitIndex = 0;
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
 
 function Settings() {
   const [libraryPath, setLibraryPath] = useState("");
   const latestVersion = appPackage.version;
   const queryClient = useQueryClient();
+  const previousConfigLibraryPath = useRef<string | undefined>(undefined);
 
   const { data: config, isLoading, error } = useAppConfig();
+  const downloads = useDownloadStore((state) => state.downloads);
+  const migrationState = useLibraryMigrationStore((state) => state.state);
+  const resetMigrationState = useLibraryMigrationStore((state) => state.resetState);
+  const isMigrationRunning = migrationState.status === "running";
+  const hasActiveDownloads = Object.values(downloads).some(
+    (download) => download.status === "downloading"
+  );
 
   useEffect(() => {
     if (!config) return;
-    setLibraryPath(config.libraryPath);
-  }, [config]);
+    const nextLibraryPath = config.libraryPath;
+
+    setLibraryPath((currentPath) => {
+      const previousPath = previousConfigLibraryPath.current;
+      previousConfigLibraryPath.current = nextLibraryPath;
+
+      if (!currentPath) {
+        return nextLibraryPath;
+      }
+
+      if (migrationState.status === "completed") {
+        return nextLibraryPath;
+      }
+
+      if (previousPath === undefined || currentPath.trim() === previousPath.trim()) {
+        return nextLibraryPath;
+      }
+
+      return currentPath;
+    });
+  }, [config?.libraryPath, migrationState.status]);
 
   const switchThemeMutation = useMutation({
     mutationFn: async (themeId: string) => {
@@ -54,9 +112,52 @@ function Settings() {
     },
   });
 
+  const startLibraryMigrationMutation = useMutation({
+    mutationFn: async (nextPath: string) => {
+      const res = await api.startLibraryMigration(nextPath);
+      if (!res) {
+        throw new Error("Failed to start library migration.");
+      }
+      return res;
+    },
+  });
+
+  useEffect(() => {
+    if (migrationState.status !== "completed") {
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["app-config"] });
+    queryClient.invalidateQueries({ queryKey: ["local-library"] });
+  }, [migrationState.status, migrationState.currentPath, queryClient]);
+
+  useEffect(() => {
+    if (migrationState.status !== "completed") {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      resetMigrationState();
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [migrationState.status, resetMigrationState]);
+
   const activeThemeId = config?.theme.active ?? "";
   const activeTheme = config?.theme.themes.find((theme) => theme.id === activeThemeId);
   const hasUpdate = latestVersion !== appPackage.version;
+  const hasLibraryChange = libraryPath.trim() !== (config?.libraryPath ?? "").trim();
+  const migrationProgress =
+    migrationState.totalBytes && migrationState.totalBytes > 0
+      ? Math.min(
+          100,
+          Math.round(((migrationState.movedBytes ?? 0) / migrationState.totalBytes) * 100)
+        )
+      : undefined;
+  const libraryMutationError =
+    startLibraryMigrationMutation.error instanceof Error
+      ? startLibraryMigrationMutation.error.message
+      : null;
 
   return (
     <div className="flex-1 h-screen overflow-y-auto p-8">
@@ -96,8 +197,13 @@ function Settings() {
             <input
               type="text"
               value={libraryPath}
-              onChange={(event) => setLibraryPath(event.target.value)}
-              disabled={isLoading}
+              onChange={(event) => {
+                if (startLibraryMigrationMutation.isError) {
+                  startLibraryMigrationMutation.reset();
+                }
+                setLibraryPath(event.target.value);
+              }}
+              disabled={isLoading || isMigrationRunning}
               placeholder="C:\\Users\\you\\oasis-library"
               className="mt-3 w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all placeholder:text-[var(--color-muted)]/70 disabled:cursor-not-allowed disabled:opacity-70"
               style={{
@@ -106,9 +212,88 @@ function Settings() {
                 color: "var(--color-accent)",
               }}
             />
-            <p className="mt-3 text-xs text-[var(--color-muted)]">
-              This path mirrors the `libraryPath` value managed by the desktop config.
-            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => startLibraryMigrationMutation.mutate(libraryPath)}
+                disabled={
+                  isLoading ||
+                  isMigrationRunning ||
+                  hasActiveDownloads ||
+                  !libraryPath.trim() ||
+                  !hasLibraryChange
+                }
+                className="rounded-2xl border px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 hover:brightness-110"
+                style={{
+                  borderColor: "var(--color-border)",
+                  backgroundColor: "var(--color-primary)",
+                  color: "var(--color-bg)",
+                }}
+              >
+                {isMigrationRunning ? "Moving..." : "Change Directory"}
+              </button>
+              <p className="text-xs text-[var(--color-muted)]">
+                The change only applies after you click the button.
+              </p>
+            </div>
+
+            {hasActiveDownloads && (
+              <p className="mt-3 text-sm text-[var(--color-muted)]">
+                Wait for active downloads to finish before changing the library path.
+              </p>
+            )}
+
+            {(migrationState.status !== "idle" || libraryMutationError) && (
+              <div
+                className="mt-5 rounded-2xl border p-4"
+                style={{
+                  backgroundColor: "color-mix(in srgb, var(--color-bg) 78%, transparent)",
+                  borderColor:
+                    migrationState.status === "error" || libraryMutationError
+                      ? "rgba(248, 113, 113, 0.6)"
+                      : "var(--color-border)",
+                }}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--color-accent)]">
+                      {migrationStageLabels[libraryMutationError ? "error" : migrationState.stage]}
+                    </p>
+                    <p
+                      className={`mt-1 text-sm ${
+                        migrationState.status === "error" || libraryMutationError
+                          ? "text-red-400"
+                          : "text-[var(--color-muted)]"
+                      }`}
+                    >
+                      {libraryMutationError ||
+                        migrationState.error ||
+                        migrationState.message ||
+                        "Ready"}
+                    </p>
+                  </div>
+
+                  {migrationProgress !== undefined && (
+                    <p className="text-xs text-[var(--color-muted)]">{migrationProgress}%</p>
+                  )}
+                </div>
+
+                {migrationProgress !== undefined && (
+                  <>
+                    <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-[var(--color-bg)]">
+                      <div
+                        className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-300"
+                        style={{ width: `${migrationProgress}%` }}
+                      />
+                    </div>
+                    <p className="mt-3 text-xs text-[var(--color-muted)]">
+                      {formatBytes(migrationState.movedBytes)} /{" "}
+                      {formatBytes(migrationState.totalBytes)}
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
           </section>
 
           <section

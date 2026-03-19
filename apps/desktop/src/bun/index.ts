@@ -1,12 +1,10 @@
 import { BrowserWindow, Updater } from "electrobun/bun";
+import { rpc } from "./rpc";
+import { runtime } from "./runtime";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
-import { rpc, configManager, zimManager, zimDownloader, initServices } from "./rpc";
-import { KiwixServer } from "./utils/kiwix-server";
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
-
-const kiwixServer = new KiwixServer();
 
 async function getMainViewUrl(): Promise<string> {
   const channel = await Updater.localInfo.channel();
@@ -23,10 +21,14 @@ async function getMainViewUrl(): Promise<string> {
 }
 
 async function start() {
-  await initServices();
+  runtime.setDownloadProgressCallback((progress) => {
+    rpc.send("onDownloadProgress", progress);
+  });
+  runtime.setMigrationProgressCallback((state) => {
+    rpc.send("onLibraryMigrationProgress", state);
+  });
 
   const url = await getMainViewUrl();
-
   const hasEngine = await isEngineInstalled();
 
   if (!hasEngine) {
@@ -46,18 +48,9 @@ async function start() {
     splashWin.close();
   }
 
-  await zimManager.initLibraryXml();
+  await runtime.startServices();
 
-  kiwixServer.start(zimManager.getLibraryXmlPath());
-
-  const isOnline = await kiwixServer.waitForReady();
-  if (!isOnline) {
-    console.error("🚨 Failed to connect to kiwix-serve.");
-    kiwixServer.stop();
-    process.exit(1);
-  }
-
-  const mainWindow = new BrowserWindow({
+  new BrowserWindow({
     title: "Oasis",
     url,
     rpc,
@@ -67,10 +60,6 @@ async function start() {
       x: 200,
       y: 200,
     },
-  });
-
-  zimDownloader.setProgressCallback((progress) => {
-    rpc.send("onDownloadProgress", progress);
   });
 }
 

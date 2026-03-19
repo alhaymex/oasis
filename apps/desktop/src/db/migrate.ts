@@ -1,9 +1,10 @@
 import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { Database } from "bun:sqlite";
-import { getLibraryPath, ensureDir, APP_ROOT } from "../bun/utils/paths";
+import { ensureDir, APP_ROOT, getConfigDir, getDatabasePath } from "../bun/utils/paths";
 import path, { join } from "path";
 import { existsSync } from "fs";
+import { loadPersistedConfig } from "../bun/utils/config-manager";
 
 export async function runMigrations(db: BunSQLiteDatabase<any>) {
   // In development, APP_ROOT is the apps/desktop directory
@@ -23,8 +24,9 @@ export async function runMigrations(db: BunSQLiteDatabase<any>) {
 }
 
 async function main() {
-  const dbPath = path.join(getLibraryPath(), "oasis.sqlite");
-  ensureDir(getLibraryPath());
+  await loadPersistedConfig();
+  const dbPath = getDatabasePath();
+  ensureDir(getConfigDir());
   const sqlite = new Database(dbPath);
   const db = drizzle(sqlite);
 

@@ -1,5 +1,28 @@
 export type DownloadStatus = "downloading" | "completed" | "canceled" | "error";
 
+export type LibraryMigrationStage =
+  | "idle"
+  | "validating"
+  | "stopping_services"
+  | "moving_files"
+  | "updating_database"
+  | "rewriting_library_xml"
+  | "writing_config"
+  | "restarting_services"
+  | "completed"
+  | "error";
+
+export interface LibraryMigrationState {
+  status: "idle" | "running" | "completed" | "error";
+  stage: LibraryMigrationStage;
+  currentPath: string;
+  nextPath?: string;
+  movedBytes?: number;
+  totalBytes?: number;
+  message?: string;
+  error?: string;
+}
+
 export interface DownloadProgressInfo {
   id: string;
   filename: string;
