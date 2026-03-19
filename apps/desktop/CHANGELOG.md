@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/alhaymex/oasis/compare/oasis-v2.1.0...oasis-v2.1.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* download splash screen ([#31](https://github.com/alhaymex/oasis/issues/31)) ([f6e60fc](https://github.com/alhaymex/oasis/commit/f6e60fcfbc9ab87e1fbe4047515163ee62a3a6ce))
+
 ## [2.1.0](https://github.com/alhaymex/oasis/compare/oasis-v2.0.0...oasis-v2.1.0) (2026-03-19)
 
 
