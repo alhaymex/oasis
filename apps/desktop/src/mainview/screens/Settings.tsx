@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Folder, Palette, Sparkles } from "lucide-react";
+import { Download, Folder, Palette, RefreshCw, Sparkles } from "lucide-react";
 import type { AppConfig } from "@/schema/config";
 import { api } from "../lib/rpcClient";
 import { useAppConfig } from "../hooks/useAppConfig";
+import { useUpdateActions, useUpdateState } from "../hooks/useUpdates";
 import { useDownloadStore, useLibraryMigrationStore } from "../store";
 import appPackage from "../../../package.json";
 
@@ -48,6 +49,8 @@ function Settings() {
   const previousConfigLibraryPath = useRef<string | undefined>(undefined);
 
   const { data: config, isLoading, error } = useAppConfig();
+  const { data: updateState } = useUpdateState();
+  const { setAutoUpdate, checkForUpdates, applyUpdate } = useUpdateActions();
   const downloads = useDownloadStore((state) => state.downloads);
   const migrationState = useLibraryMigrationStore((state) => state.state);
   const resetMigrationState = useLibraryMigrationStore((state) => state.resetState);
@@ -152,7 +155,13 @@ function Settings() {
 
   const activeThemeId = config?.theme.active ?? "";
   const activeTheme = config?.theme.themes.find((theme) => theme.id === activeThemeId);
-  const hasUpdate = latestVersion !== appPackage.version;
+  const currentVersion = updateState?.currentVersion ?? latestVersion;
+  const latestAvailableVersion = updateState?.latestVersion;
+  const hasUpdate = Boolean(updateState?.updateAvailable || updateState?.updateReady);
+  const isCheckingForUpdates =
+    updateState?.status === "checking" || checkForUpdates.isPending || false;
+  const canDownloadUpdate = updateState?.status === "available" && !updateState?.updateReady;
+  const canInstallUpdate = Boolean(updateState?.updateReady);
   const hasLibraryChange = libraryPath.trim() !== (config?.libraryPath ?? "").trim();
   const migrationProgress =
     migrationState.totalBytes && migrationState.totalBytes > 0
@@ -165,6 +174,12 @@ function Settings() {
     startLibraryMigrationMutation.error instanceof Error
       ? startLibraryMigrationMutation.error.message
       : null;
+  const updateMutationError =
+    checkForUpdates.error instanceof Error
+      ? checkForUpdates.error.message
+      : applyUpdate.error instanceof Error
+        ? applyUpdate.error.message
+        : null;
 
   return (
     <div className="flex-1 h-screen overflow-y-auto p-8">
@@ -398,23 +413,29 @@ function Settings() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-[var(--color-accent)]">App version</h2>
-                  <p className="text-sm text-[var(--color-muted)]">Installed desktop build.</p>
+                  <p className="text-sm text-[var(--color-muted)]">
+                    Installed desktop build and automatic update status.
+                  </p>
                 </div>
               </div>
 
-              {hasUpdate && (
-                <button
-                  type="button"
-                  className="rounded-2xl border px-4 py-2 text-sm font-medium transition-all hover:brightness-110"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    backgroundColor: "var(--color-primary)",
-                    color: "var(--color-bg)",
-                  }}
-                >
-                  Update
-                </button>
-              )}
+              <label className="flex items-center gap-3 rounded-2xl border px-4 py-3">
+                <input
+                  type="checkbox"
+                  checked={config?.autoUpdate ?? true}
+                  onChange={(event) => setAutoUpdate.mutate(event.target.checked)}
+                  disabled={isLoading || setAutoUpdate.isPending}
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                <div>
+                  <p className="text-sm font-medium text-[var(--color-accent)]">
+                    Automatic updates
+                  </p>
+                  <p className="text-xs text-[var(--color-muted)]">
+                    Check for updates on launch and download them in the background when available.
+                  </p>
+                </div>
+              </label>
             </div>
 
             <div className="mt-5 flex items-end justify-between gap-4">
@@ -423,15 +444,99 @@ function Settings() {
                   Current
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-[var(--color-accent)]">
-                  v{appPackage.version}
+                  v{currentVersion}
                 </p>
               </div>
 
               <p className="text-sm text-[var(--color-muted)]">
-                {hasUpdate
-                  ? `Latest available: v${latestVersion}`
-                  : "You are on the latest version."}
+                {latestAvailableVersion
+                  ? `Latest available: v${latestAvailableVersion}`
+                  : "No update metadata loaded yet."}
               </p>
+            </div>
+
+            <div
+              className="mt-5 rounded-2xl border p-4"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--color-bg) 78%, transparent)",
+                borderColor: "var(--color-border)",
+              }}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-accent)]">
+                    {updateState?.message ||
+                      (hasUpdate ? "Update available." : "You are on the latest version.")}
+                  </p>
+                  <p
+                    className={`mt-1 text-sm ${
+                      updateState?.status === "error" ? "text-red-400" : "text-[var(--color-muted)]"
+                    }`}
+                  >
+                    {updateState?.error ||
+                      (updateState?.lastCheckedAt
+                        ? `Last checked ${new Date(updateState.lastCheckedAt).toLocaleString()}`
+                        : "Check now to refresh update state.")}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => checkForUpdates.mutate(config?.autoUpdate ?? true)}
+                    disabled={isCheckingForUpdates}
+                    className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 hover:brightness-110"
+                    style={{
+                      borderColor: "var(--color-border)",
+                      backgroundColor: "var(--color-bg)",
+                      color: "var(--color-accent)",
+                    }}
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 ${isCheckingForUpdates ? "animate-spin" : ""}`}
+                    />
+                    {isCheckingForUpdates ? "Checking..." : "Check now"}
+                  </button>
+
+                  {canDownloadUpdate && (
+                    <button
+                      type="button"
+                      onClick={() => checkForUpdates.mutate(true)}
+                      disabled={checkForUpdates.isPending}
+                      className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 hover:brightness-110"
+                      style={{
+                        borderColor: "var(--color-border)",
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-bg)",
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                      {checkForUpdates.isPending ? "Downloading..." : "Download update"}
+                    </button>
+                  )}
+
+                  {canInstallUpdate && (
+                    <button
+                      type="button"
+                      onClick={() => applyUpdate.mutate()}
+                      disabled={applyUpdate.isPending}
+                      className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 hover:brightness-110"
+                      style={{
+                        borderColor: "var(--color-border)",
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-bg)",
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                      {applyUpdate.isPending ? "Restarting..." : "Install update"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {updateMutationError && (
+                <p className="mt-3 text-sm text-red-400">{updateMutationError}</p>
+              )}
             </div>
           </section>
         </div>

@@ -1,5 +1,6 @@
 import type { RPCSchema } from "electrobun";
 import type {
+  AppUpdateState,
   CatalogSiteDetail,
   CatalogSiteSummary,
   CatalogVariantResult,
@@ -89,6 +90,22 @@ export type AppRPCSchema = {
       switchTheme: {
         params: { themeId: string };
         response: AppConfig;
+      };
+      setAutoUpdate: {
+        params: { enabled: boolean };
+        response: AppConfig;
+      };
+      getUpdateState: {
+        params: void;
+        response: AppUpdateState;
+      };
+      checkForUpdates: {
+        params: { autoDownload?: boolean };
+        response: AppUpdateState;
+      };
+      applyUpdate: {
+        params: void;
+        response: { accepted: true };
       };
       startLibraryMigration: {
         params: { nextLibraryPath: string };

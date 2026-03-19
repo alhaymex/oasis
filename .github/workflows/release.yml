@@ -44,6 +44,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: |
-            apps/desktop/artifacts/stable-win-x64-oasis-Setup.zip
-            apps/desktop/artifacts/stable-win-x64-oasis.tar.zst
+          files: apps/desktop/artifacts/*

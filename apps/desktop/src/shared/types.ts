@@ -110,3 +110,27 @@ export interface NoteRecord {
   createdAt: Date | null;
   updatedAt: Date | null;
 }
+
+export type AppUpdateStatus =
+  | "idle"
+  | "checking"
+  | "offline"
+  | "up_to_date"
+  | "available"
+  | "downloading"
+  | "ready"
+  | "error";
+
+export interface AppUpdateState {
+  status: AppUpdateStatus;
+  autoUpdateEnabled: boolean;
+  currentVersion: string;
+  currentHash?: string;
+  latestVersion?: string;
+  latestHash?: string;
+  updateAvailable: boolean;
+  updateReady: boolean;
+  message?: string;
+  error?: string;
+  lastCheckedAt?: string;
+}

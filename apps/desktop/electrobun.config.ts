@@ -2,6 +2,9 @@ import type { ElectrobunConfig } from "electrobun";
 import pkgJSON from "./package.json";
 
 export default {
+  release: {
+    baseUrl: "https://github.com/alhaymex/oasis/releases/latest/download",
+  },
   app: {
     name: "Oasis",
     identifier: "oasis.syferpool.com",
