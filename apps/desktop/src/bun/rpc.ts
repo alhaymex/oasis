@@ -58,6 +58,7 @@ export const rpc = BrowserView.defineRPC<AppRPCSchema>({
       },
       getLocalLibrary: () => getDownloadedBooks(),
       getActiveDownloads: () => zimDownloader.getActiveDownloads(),
+      getConfig: () => configManager.getConfig(),
     },
   },
 });

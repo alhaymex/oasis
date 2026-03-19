@@ -1,5 +1,6 @@
 import type { RPCSchema } from "electrobun";
 import type { StoreCatalog, DownloadProgressInfo, LibraryBook } from "./types";
+import type { AppConfig } from "../schema/config";
 
 export type AppRPCSchema = {
   // functions that can be called from the client
@@ -24,6 +25,10 @@ export type AppRPCSchema = {
       getActiveDownloads: {
         params: void;
         response: DownloadProgressInfo[];
+      };
+      getConfig: {
+        params: void;
+        response: AppConfig;
       };
     };
     messages: {};
