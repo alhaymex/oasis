@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/alhaymex/oasis/compare/oasis-v1.8.0...oasis-v1.8.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* file size calculation and race condition ([#24](https://github.com/alhaymex/oasis/issues/24)) ([f3ce43f](https://github.com/alhaymex/oasis/commit/f3ce43f2c5b811b07c349eaabddacd435d25cedd))
+
 ## [1.8.0](https://github.com/alhaymex/oasis/compare/oasis-v1.7.0...oasis-v1.8.0) (2026-03-19)
 
 
