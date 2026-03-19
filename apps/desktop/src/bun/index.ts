@@ -2,6 +2,7 @@ import { BrowserWindow, Updater } from "electrobun/bun";
 import { installEngine, isEngineInstalled } from "./utils/engine-manager";
 import { rpc, configManager, zimManager, zimDownloader, initServices } from "./rpc";
 import { KiwixServer } from "./utils/kiwix-server";
+import { ensureBundledCatalogSeeded } from "./utils/catalog-seed";
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
@@ -46,6 +47,7 @@ async function start() {
     splashWin.close();
   }
 
+  await ensureBundledCatalogSeeded();
   await zimManager.initLibraryXml();
 
   kiwixServer.start(zimManager.getLibraryXmlPath());
@@ -74,4 +76,7 @@ async function start() {
   });
 }
 
-start().catch(console.error);
+start().catch((error) => {
+  console.error("Failed to start Oasis:", error);
+  process.exit(1);
+});

@@ -1,5 +1,11 @@
 import type { RPCSchema } from "electrobun";
-import type { StoreCatalog, DownloadProgressInfo, LibraryBook } from "./types";
+import type {
+  CatalogSiteDetail,
+  CatalogSiteSummary,
+  CatalogVariantResult,
+  DownloadProgressInfo,
+  LibraryBook,
+} from "./types";
 
 export type AppRPCSchema = {
   // functions that can be called from the client
@@ -9,9 +15,17 @@ export type AppRPCSchema = {
         params: { msg: string };
         response: void;
       };
-      getStoreCatalog: {
+      getCatalogSites: {
         params: void;
-        response: StoreCatalog | null;
+        response: CatalogSiteSummary[];
+      };
+      getCatalogSite: {
+        params: { siteId: string };
+        response: CatalogSiteDetail | null;
+      };
+      searchCatalog: {
+        params: { query: string; limit?: number };
+        response: CatalogVariantResult[];
       };
       startDownload: {
         params: { id: string; url: string; filename: string };

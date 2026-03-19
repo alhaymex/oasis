@@ -48,6 +48,30 @@ To start the development server with Hot Module Replacement (HMR):
 bun run dev:hmr
 ```
 
+### Catalog and Packaging
+
+The desktop app no longer fetches its catalog at runtime on first launch.
+
+- `catalog/catalog.json` is the canonical source in the repo.
+- `apps/desktop/scripts/stage-catalog.ts` copies that file to `apps/desktop/.generated/catalog/catalog.json` before desktop dev/build runs.
+- Electrobun packages the staged catalog and `apps/desktop/drizzle` into app resources.
+- The installed app must not rely on files outside `apps/desktop`. If a packaged feature needs a runtime file, bundle it first.
+
+Useful desktop commands:
+
+```bash
+bun run --cwd apps/desktop stage:catalog
+bun run --cwd apps/desktop typecheck
+bun run --cwd apps/desktop build:canary
+```
+
+Packaged startup behavior:
+
+- Run DB migrations from bundled `drizzle/`
+- Seed/update SQLite from bundled `catalog/catalog.json`
+- Skip reseed when the bundled catalog hash is unchanged
+- Abort startup if migration or seeding fails
+
 ### Building the App
 
 To build the desktop application:

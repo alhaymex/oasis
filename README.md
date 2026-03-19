@@ -73,6 +73,21 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
+## Desktop Packaging Notes
+
+The desktop app now ships with a bundled local catalog and bundled SQLite migrations.
+
+- Canonical catalog source: `catalog/catalog.json`
+- Desktop-local staged copy used by dev/build: `apps/desktop/.generated/catalog/catalog.json`
+- `Resources/app/catalog/catalog.json`
+- `Resources/app/drizzle/*`
+
+Notes:
+
+- You do not need to manually copy the catalog into `apps/desktop`. Desktop scripts stage it automatically before `dev`, `start`, `build:canary`, and `build:stable`.
+- On first launch, Oasis runs DB migrations, seeds the bundled catalog into SQLite, and only then opens the main window.
+- The installed app must not depend on the monorepo root at runtime. Files needed after packaging must be copied into desktop resources during build.
+
 ---
 
 <p align="center">Made with ❤️ for the offline web.</p>

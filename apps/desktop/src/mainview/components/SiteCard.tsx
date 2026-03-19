@@ -1,4 +1,4 @@
-import type { StoreSite } from "@/shared/types";
+import type { CatalogSiteSummary } from "@/shared/types";
 import { Globe, BookOpen, FlaskConical } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -9,7 +9,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 interface SiteCardProps {
-  site: StoreSite;
+  site: CatalogSiteSummary;
 }
 
 export default function SiteCard({ site }: SiteCardProps) {
@@ -41,7 +41,7 @@ export default function SiteCard({ site }: SiteCardProps) {
       </div>
 
       <span className="mt-2 text-xs text-[var(--color-muted)] text-center">
-        {site.variants.length} {site.variants.length === 1 ? "version" : "versions"}
+        {site.variantCount} {site.variantCount === 1 ? "version" : "versions"}
       </span>
     </Link>
   );
