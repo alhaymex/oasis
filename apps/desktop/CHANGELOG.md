@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/alhaymex/oasis/compare/oasis-v2.0.0...oasis-v2.1.0) (2026-03-19)
+
+
+### Features
+
+* dd desktop auto-update flow and settings controls ([#29](https://github.com/alhaymex/oasis/issues/29)) ([6f4d2f5](https://github.com/alhaymex/oasis/commit/6f4d2f597ffe064135b69ba7f081c021e5f54810))
+
 ## [2.0.0](https://github.com/alhaymex/oasis/compare/oasis-v1.8.1...oasis-v2.0.0) (2026-03-19)
 
 
